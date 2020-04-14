@@ -4,6 +4,7 @@
 #include <ncurses.h>
 #include <fstream>
 #include <list>
+#include <map>
 #include <iterator>
 #include <algorithm>
 #include <string>
@@ -13,8 +14,18 @@
 #include <bits/stdc++.h>
 
 #include "version.hpp"
+#include "menu.hpp"
 
 namespace cedit {
+
+struct BrainData
+{
+	long int contentIndex;
+	std::size_t currentIndex;
+	std::size_t savedIndex;
+	std::size_t entryLine;
+	bool showLineNumbers;
+};
 
 class Cedit
 {
@@ -22,6 +33,8 @@ public:
 
 	std::list<std::string> content;
 	std::list<std::string>::iterator contentIt;
+
+	std::map<std::string, BrainData> brain;
 
 	std::size_t currentIndex;
 	std::size_t savedIndex;
@@ -36,9 +49,14 @@ public:
 
 	std::string filename;
 
+	bool showLineNumbers;
+	bool quite;
+
 	WINDOW* wheader;
 	WINDOW* wcontent;
 	WINDOW* wmenu;
+	Menu menu;
+
 	WINDOW* wfooter;
 
 	const std::size_t width = getmaxx(stdscr);
@@ -76,6 +94,12 @@ public:
 	void event_pagedown();
 
 	void event_pageup();
+
+	void event_toggle_linenumbers();
+
+	void event_goto();
+
+	void event_quite();
 
 	void display();
 

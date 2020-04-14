@@ -1,6 +1,6 @@
 #ifndef VERSION_HPP
 #define VERSION_HPP
 
-#define VERSION "cedit 1.7.3"
+#define VERSION "cedit PRE 1.7.4"
 
 #endif

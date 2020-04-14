@@ -10,7 +10,7 @@ void NCURSES_INIT()
 	raw();
 	curs_set(0);
 	keypad(stdscr, true);
-	setlocale(LC_ALL, "");
+	//setlocale(LC_ALL, "");
 }
 
 namespace cedit

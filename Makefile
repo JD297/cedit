@@ -1,20 +1,26 @@
-output: main.o cedit.o
-	g++ -std=c++17 -g -O1 -Wall -Wextra -Wpedantic obj/main.o obj/cedit.o -lncurses -o cedit
+TARGET=cedit
+
+CC=g++
+CFLAGS=-std=c++17 -O3 -Wall -Wextra -Wpedantic
+CLIBS=-lncurses
+
+OBJS=main.o cedit.o window.o menu.o
+OBJSP=./obj/main.o ./obj/cedit.o ./obj/window.o ./obj/menu.o 
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJSP) $(CLIBS) -o $(TARGET)
 
 main.o:
-	g++ -std=c++17 -g -O1 -Wall -Wextra -Wpedantic -c src/main.cpp -o obj/main.o
+	$(CC) $(CFLAGS) -c ./src/main.cpp -o ./obj/main.o
 
 cedit.o:
-	g++ -std=c++17 -g -O1 -Wall -Wextra -Wpedantic -c src/cedit.cpp -o obj/cedit.o
+	$(CC) $(CFLAGS) -c ./src/cedit.cpp -o ./obj/cedit.o
+
+window.o:
+	$(CC) $(CFLAGS) -c ./src/window.cpp -o ./obj/window.o
+
+menu.o:
+	$(CC) $(CFLAGS) -c ./src/menu.cpp -o ./obj/menu.o
 
 clean:
-	rm obj/*.o cedit 2>/dev/null
-
-install: output
-	sudo cp cedit /usr/bin/cedit
-
-uninstall:
-	sudo rm /usr/bin/cedit
-
-test: output
-	./cedit
+	$(RM) $(TARGET) $(OBJSP)
