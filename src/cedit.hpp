@@ -20,6 +20,7 @@ namespace cedit {
 
 struct BrainData
 {
+	std::list<std::string> content;
 	long int contentIndex;
 	std::size_t currentIndex;
 	std::size_t savedIndex;
@@ -57,13 +58,11 @@ public:
 	WINDOW* wmenu;
 	Menu menu;
 
-	WINDOW* wfooter;
-
 	const std::size_t width = getmaxx(stdscr);
-	const std::size_t height = getmaxy(stdscr) - 5;
+	const std::size_t height = getmaxy(stdscr) - 4;
 
-	const std::size_t rwidth = width;
-	const std::size_t rheight = height+5;
+	const std::size_t rwidth = getmaxx(stdscr);
+	const std::size_t rheight = getmaxy(stdscr);
 
 	Cedit();
 
@@ -95,6 +94,10 @@ public:
 
 	void event_pageup();
 
+	void event_pos1();
+
+	void event_end();
+
 	void event_toggle_linenumbers();
 
 	void event_goto();
@@ -114,8 +117,6 @@ public:
 	void display_content();
 
 	void display_help(std::string key, std::string text);
-
-	void display_footer();
 };
 
 }

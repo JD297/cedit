@@ -4,6 +4,11 @@
 #include <string>
 #include <cstring>
 #include <list>
+#include <sstream>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <ncurses.h>
 #include "window.hpp"
@@ -13,15 +18,20 @@ namespace cedit {
 class Menu : public cedit::Window  {
 public:
 	std::string content;
+
+	Menu();
+
+	[[nodiscard]] bool type(const char* text, const char* content = "");
+
+	void display(std::stringstream* text);
+private:
 	std::size_t currentIndex;
 
 	int key;
 
-    Menu();
+	void display_type(const char* text);
 
-    void display(const char* text);
-
-    void event_insert();
+	void event_insert();
 
 	void event_left();
 
@@ -34,8 +44,6 @@ public:
 	void event_pos_1();
 
 	void event_pos_end();
-
-    [[nodiscard]] bool type(const char* text, const char* content = "");
 };
 
 }

@@ -2,13 +2,38 @@
 
 namespace cedit {
 
-Menu::Menu() : Window(getmaxx(stdscr), 1, 0, getmaxy(stdscr)-3)
-{
-      
+Menu::Menu() : Window(getmaxx(stdscr), 1, 0, getmaxy(stdscr) - 1) {
+
 }
 
-void Menu::display(const char* text) {
-    wbkgd(this->window, A_REVERSE);  
+void Menu::display(std::stringstream* text) {
+	wbkgd(this->window, A_REVERSE);
+	wclear(this->window);
+
+	// Demo Code
+	// const std::string session = "[0]cedit.cpp [1]version.hpp*";
+	// Demo Code End
+
+	// mvwprintw(this->window, 0, 0, session.c_str());
+
+	if(!text->str().empty()) {
+		const std::string message = text->str();
+		text->str("");
+		text->clear();
+
+		*text << "[ " << message << " ]";
+
+		mvwprintw(this->window, 0, (size_t)(getmaxx(stdscr) / 2 - text->str().length() / 2), text->str().c_str());
+	}
+
+	text->str("");
+	text->clear();
+
+	wrefresh(this->window);
+}
+
+void Menu::display_type(const char* text) {
+    wbkgd(this->window, A_REVERSE);
 
     wclear(this->window);
     wprintw(this->window, text);
@@ -16,23 +41,6 @@ void Menu::display(const char* text) {
     mvwprintw(this->window, 0, std::strlen(text), "%s", this->content.c_str());
 
     wmove(this->window, 0, std::strlen(text) + this->currentIndex); // Cursour
-
-	// Folgender Code wurde entfernt. Das Betriebssystem bietet bereits einen Cursour
-    /*for(auto it = this->content.begin(); it != this->content.end(); it++) {
-        if(std::distance(it, std::next(this->content.begin(), this->currentIndex))  == 0 ) {
-            wattron(this->window, A_UNDERLINE);
-            wprintw(this->window, "%c", *it);
-            wattroff(this->window, A_UNDERLINE);
-        } else {
-            wprintw(this->window, "%c", *it);
-        }
-    }*/
-
-    /*if(this->currentIndex == this->content.length()) {
-        wattron(this->window, A_UNDERLINE);
-        wprintw(this->window, "%c", ' ');
-        wattroff(this->window, A_UNDERLINE);
-    }*/
 }
 
 void Menu::event_insert() {
@@ -96,20 +104,20 @@ void Menu::event_pos_end() {
 
     while(true) {
 
-        this->display(text);
+        this->display_type(text);
 
         this->key = wgetch(this->window);
 
         switch(this->key) {
             case 10: // OK enter
-                wbkgd(this->window, A_NORMAL);  
+                wbkgd(this->window, A_NORMAL);
                 this->window_clear_refresh();
-                
+
                 curs_set(0);
                 return this->content.length() > 0;
             break;
             case 3: // abort strg+c
-                wbkgd(this->window, A_NORMAL); 
+                wbkgd(this->window, A_NORMAL);
                 this->window_clear_refresh();
 
                 curs_set(0);

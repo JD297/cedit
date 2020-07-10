@@ -11,14 +11,12 @@ Cedit::Cedit():
 	refreshHeader(true),
 	isrunning(true),
 	filename(""),
-	showLineNumbers(true),
+	showLineNumbers(false),
 	quite(false)
 {
 	this->wheader = newwin(1, this->width, 0, 0);
 	this->wcontent = newwin(this->height, this->width, 2, 0);
-
-	this->wmenu = newwin(1, this->width, this->rheight-3, 0);
-	this->wfooter = newwin(2, this->width, this->rheight-2, 0);
+	this->wmenu = newwin(1, this->width, this->rheight - 1, 0);
 
 	this->content.emplace_back("");
 	this->contentIt = this->content.begin();
@@ -80,6 +78,12 @@ void Cedit::run()
 			case 339:
 				this->event_pageup();
 			break;
+			case 262:
+				this->event_pos1();
+			break;
+			case 360:
+				this->event_end();
+			break;
 			case 12:
 				this->event_toggle_linenumbers();
 			break;
@@ -102,7 +106,6 @@ void Cedit::event_save()
 	if(this->filename.empty())
 	{
 		if(!this->menu.type("Dateiname zum Speichern [von ./]: ")) {
-			// error or user terminated (strg+c)
 			return;
 		}
 
@@ -111,13 +114,11 @@ void Cedit::event_save()
 		this->refreshHeader = true;
 	}
 
-	// TODO error checking 
+	// TODO error checking
 	std::ofstream output;
 	output.open(this->filename.c_str());
 
-	//auto it = std::prev(this->content.end());
-
-	if(auto it = std::prev(this->content.end()); !it->empty()) // Last char of it end != '\n' ???
+	if(auto it = std::prev(this->content.end()); !it->empty())
 	{
 		it->append("\n");
 		this->content.emplace_back(""); // REMOVE ???
@@ -131,11 +132,9 @@ void Cedit::event_save()
 	output.close();
 
 	std::stringstream menu_text;
-	menu_text << "[ " << content.size()-1 << " Zeilen geschrieben ]";
+	menu_text << content.size()-1 << " " << SAVE_MESSAGE;
 
-	wattron(wmenu, A_REVERSE);
-	menu_print_clear(menu_text.str(), (size_t)(this->width / 2 - menu_text.str().size() / 2), 0);
-	wattroff(wmenu, A_REVERSE);
+	this->menu.display(&menu_text);
 }
 
 void Cedit::event_load(const char* filename)
@@ -144,15 +143,27 @@ void Cedit::event_load(const char* filename)
 
 	std::ifstream f(this->filename, std::ios::in);
 
+	this->content.clear();
+
+	this->refreshHeader = true;
+
+	std::string message = "";
+
+	// Not a regular file
+	if(false) {
+		this->filename = "";
+
+		message = "[ " + std::string(filename) + " is not a regular file ]";
+	}
+
+	// File error
 	if(!f.good())
 	{
-		std::string message = "";
-		if(errno == 13)
+		if(errno)
 		{
 			this->filename = "";
-			this->refreshHeader = true;
 
-			message = "[ Fehler beim Lesen von " + std::string(filename) + ": Keine Berechtigung ]";
+			message = "[ Fehler beim Lesen von: " + std::string(filename) + " : " + std::strerror(errno)  + " ]";
 		}
 		else
 		{
@@ -162,17 +173,16 @@ void Cedit::event_load(const char* filename)
 		wattron(this->wmenu, A_REVERSE);
 		menu_print_clear(message.c_str(), (size_t)(this->width / 2 - message.length() / 2), 0);
 		wattroff(this->wmenu, A_REVERSE);
+
 		return;
 	}
-
-	this->content.clear();
 
 	while(!f.eof())
 	{
 		std::string temp;
 		getline(f, temp);
 
-		this->content.emplace_back(temp+"\n"); 
+		this->content.emplace_back(temp+"\n");
 	}
 	f.close();
 
@@ -183,7 +193,6 @@ void Cedit::event_load(const char* filename)
 	if(this->brain.find(this->filename) != this->brain.end())
 	{
 		std::advance(this->contentIt, this->brain[this->filename].contentIndex);
-
 		this->currentIndex = this->brain[this->filename].currentIndex;
 		this->savedIndex = this->brain[this->filename].savedIndex;
 		this->entryLine = this->brain[this->filename].entryLine;
@@ -191,20 +200,19 @@ void Cedit::event_load(const char* filename)
 	}
 
 	std::stringstream menu_text;
-	menu_text << "[ " << this->content.size()-1 << " Zeilen gelesen ]";
+	menu_text << this->content.size()-1 << " " << LOAD_MESSAGE;
 
-	wattron(this->wmenu, A_REVERSE);
-	menu_print_clear(menu_text.str(), (size_t)(this->width / 2 - menu_text.str().size() / 2), 0);
-	wattroff(this->wmenu, A_REVERSE);
+	this->menu.display(&menu_text);
 }
 
 void Cedit::event_open()
 {
-	if(!this->menu.type("Dateiname zum offnen [von ./]: ")) {
+	if(!this->menu.type(FILE_OPEN_MESSAGE)) {
 		return;
 	}
 
 	this->brain[this->filename] = {
+		this->content,
 		std::distance(this->content.begin(), this->contentIt),
 		this->currentIndex,
 		this->savedIndex,
@@ -324,22 +332,24 @@ void Cedit::event_up()
 
 void Cedit::event_down()
 {
-	if(this->contentIt != std::prev(this->content.end()))
+	if(this->contentIt == std::prev(this->content.end()))
 	{
-		this->contentIt = std::next(this->contentIt);
+		return;
+	}
 
-		if(this->contentIt->length() < this->savedIndex && this->contentIt == std::prev(this->content.end()))
-		{
-			this->currentIndex = this->contentIt->length();
-		}
-		else if(this->contentIt->length()-1 < this->savedIndex)
-		{
-			this->currentIndex = this->contentIt->length()-1;
-		}
-		else
-		{
-			this->currentIndex = this->savedIndex;
-		}
+	this->contentIt = std::next(this->contentIt);
+
+	if(this->contentIt->length() <= this->savedIndex && this->contentIt == std::prev(this->content.end()))
+	{
+		this->currentIndex = this->contentIt->length();
+	}
+	else if(this->contentIt->length()-1 < this->savedIndex)
+	{
+		this->currentIndex = this->contentIt->length()-1;
+	}
+	else
+	{
+		this->currentIndex = this->savedIndex;
 	}
 }
 
@@ -362,15 +372,21 @@ void Cedit::event_left()
 
 void Cedit::event_right()
 {
-	if(
-		this->currentIndex < this->contentIt->length()-1 || (
-		this->currentIndex <= this->contentIt->length()-1 &&
-		this->contentIt == std::prev(this->content.end())))
+	const auto itEnd = std::prev(this->content.end());
+
+	if(this->currentIndex < this->contentIt->length()-1 ||
+	  (this->currentIndex < this->contentIt->length() && contentIt == itEnd)
+	)
 	{
+		if(currentIndex == this->contentIt->length() && this->contentIt->back() != '\n')
+		{
+			return;
+		}
+
 		this->currentIndex++;
 		this->savedIndex = this->currentIndex;
 	}
-	else if(this->contentIt != std::prev(this->content.end()))
+	else if(this->contentIt != itEnd)
 	{
 		this->contentIt = std::next(this->contentIt);
 
@@ -392,8 +408,6 @@ void Cedit::event_pagedown()
 
 	this->currentIndex = 0;
 	this->savedIndex = 0;
-
-	wrefresh(this->wcontent);
 }
 
 void Cedit::event_pageup()
@@ -409,8 +423,26 @@ void Cedit::event_pageup()
 
 	this->currentIndex = 0;
 	this->savedIndex = 0;
+}
 
-	wrefresh(this->wcontent);
+void Cedit::event_pos1()
+{
+	this->currentIndex = 0;
+	this->savedIndex = 0;
+}
+
+void Cedit::event_end()
+{
+	if(contentIt != std::prev(this->content.end()))
+	{
+		this->currentIndex = this->contentIt->length()-1;
+		this->savedIndex = this->contentIt->length()-1;
+	}
+	else
+	{
+		this->currentIndex = this->contentIt->length();
+		this->savedIndex = this->contentIt->length();
+	}
 }
 
 void Cedit::event_toggle_linenumbers()
@@ -459,7 +491,6 @@ void Cedit::display()
 {
 	this->display_header();
 	this->display_content();
-	this->display_footer();
 }
 
 void Cedit::menu_reset()
@@ -471,7 +502,6 @@ void Cedit::menu_reset()
 
 void Cedit::menu_print(const std::string text, const size_t x = 0, const size_t y = 0)
 {
-	/* In NCurses wird zuerst y und dann x eingefuegt. Die Funktion erwartet die Parameter aber in gewohnter Reihenfolge. */
 	mvwprintw(this->wmenu, y, x, "%s", text.c_str());
 
 	wrefresh(this->wmenu);
@@ -566,43 +596,6 @@ void Cedit::display_content()
 	for(size_t i = 0; i < this->height - distance(itBegin, itEnd); i++)
 	{
 		wprintw(this->wcontent, "\n~");
-	}
-}
-
-void Cedit::display_help(std::string key, std::string text)
-{
-	wattron(this->wfooter, A_REVERSE);
-	wprintw(this->wfooter , key.c_str());
-	wattroff(this->wfooter, A_REVERSE);
-	wprintw(this->wfooter, text.c_str());
-}
-
-void Cedit::display_footer()
-{
-	if(this->refreshDisplay)
-	{
-		wclear(wfooter);
-
-		this->display_help("Esc",   " Beenden      ");
-		this->display_help("^S" ,   " Speichern      ");
-		this->display_help("^O" ,   " Datei offnen      ");
-		this->display_help("^L",    " Zeilenangabe      ");
-		//this->display_help("^F" , " Wo ist            ");
-
-
-		wmove(wfooter, 1, 1);
-
-		this->display_help("^G",    " Gehe zu      ");
-		this->display_help("^Q",    " Ruhiger Modus  ");
-
-		//this->display_help("^X" , " Ausschneiden   ");
-		//this->display_help("^C" , " Kopieren      ");
-		//this->display_help("^V" , " Einfügen     ");
-		//this->display_help("^H" , " Hilfe      ");
-
-		wrefresh(this->wfooter);
-
-		this->refreshDisplay = false;
 	}
 }
 

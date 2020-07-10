@@ -10,6 +10,8 @@ void NCURSES_INIT()
 	raw();
 	curs_set(0);
 	keypad(stdscr, true);
+	set_escdelay(100);
+	set_tabsize(4);
 	//setlocale(LC_ALL, "");
 }
 
