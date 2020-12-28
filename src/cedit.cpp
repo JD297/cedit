@@ -310,7 +310,38 @@ void Cedit::event_backspace()
 
 void Cedit::event_delete()
 {
-	// TODO
+	// letztes zeichen und letzte zeile
+	if(this->currentIndex == this->contentIt->length() && this->content.end() == std::next(this->contentIt))
+	{
+		return;
+	}
+	// zeilen ende: copy next line to this line, delete next line
+	else if(this->currentIndex == this->contentIt->length()-1 && this->contentIt->back() == '\n')
+	{
+		// Ueberprüfe ob die Zeile die geloescht werden soll Inhalt enthält
+		// bzw die zeile die kopiert werden soll
+		if(std::next(this->contentIt)->length() != 1)
+		{
+			// entferne den Absatz
+			this->contentIt->erase(this->currentIndex, 1);
+
+			// Fuege die gesammte naechte Zeile an die aktuelle Zeile an
+			this->contentIt->append(std::next(this->contentIt)->substr(0));
+
+			// Loesche die neachte zeile, von wo aus kopiert wurde
+			this->content.erase(std::next(this->contentIt));
+		}
+		else if(std::next(this->contentIt)->length() == 1)
+		{
+			// Lösche die neachste Zeile
+			this->content.erase(std::next(this->contentIt));
+		}
+	}
+	else
+	{
+		// delete character
+		this->contentIt->erase(this->currentIndex, 1);
+	}
 }
 
 void Cedit::event_up()
