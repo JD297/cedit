@@ -15,7 +15,7 @@ Cedit::Cedit():
 	quite(false)
 {
 	this->wheader = newwin(1, this->width, 0, 0);
-	this->wcontent = newwin(this->height, this->width, 2, 0);
+	this->wcontent = newwin(this->height, this->width, 1, 0);
 	this->wmenu = newwin(1, this->width, this->rheight - 1, 0);
 
 	this->content.emplace_back("");
@@ -269,6 +269,8 @@ void Cedit::event_backspace()
 	// Wenn am Anfang der Zeile und aktuelle Zeile ist nicht die Erste Zeile
 	if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
+		this->scrollup();
+
 		// Überprüfe ob die Zeile die gelöscht werden soll Inhalt enthält
 		if(std::prev(this->contentIt)->length() != 1)
 		{
@@ -344,10 +346,39 @@ void Cedit::event_delete()
 	}
 }
 
+std::list<std::string>::iterator Cedit::displayFirstIt()
+{
+	return std::next(this->content.begin(), this->entryLine);
+}
+
+std::list<std::string>::iterator Cedit::displayLastIt()
+{
+	const auto itBegin = this->displayFirstIt();
+
+	return this->entryLine + this->height >= this->content.size() ? this->content.end() : std::next(itBegin, this->height);
+}
+
+void Cedit::scrollup(size_t n)
+{
+	if(this->contentIt == this->displayFirstIt() && n == 1)
+	{
+		this->entryLine--;
+	}
+}
+
+void Cedit::scrolldown(size_t n)
+{
+	if(this->contentIt == this->displayLastIt() && n == 1)
+	{
+		this->entryLine++;
+	}
+}
+
 void Cedit::event_up()
 {
 	if(this->contentIt != this->content.begin())
 	{
+		this->scrollup();
 		this->contentIt = std::prev(this->contentIt);
 
 		if(this->contentIt->length()-1 < this->savedIndex)
@@ -369,6 +400,7 @@ void Cedit::event_down()
 	}
 
 	this->contentIt = std::next(this->contentIt);
+	this->scrolldown();
 
 	if(this->contentIt->length() <= this->savedIndex && this->contentIt == std::prev(this->content.end()))
 	{
@@ -394,6 +426,7 @@ void Cedit::event_left()
 	}
 	else if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
+		this->scrollup();
 		this->contentIt = std::prev(this->contentIt);
 
 		this->currentIndex = this->contentIt->length()-1;
@@ -420,6 +453,7 @@ void Cedit::event_right()
 	else if(this->contentIt != itEnd)
 	{
 		this->contentIt = std::next(this->contentIt);
+		this->scrolldown();
 
 		this->currentIndex = 0;
 		this->savedIndex = 0;
@@ -428,14 +462,24 @@ void Cedit::event_right()
 
 void Cedit::event_pagedown()
 {
-	if(this->entryLine >= this->content.size()-height)
+	if(this->entryLine > this->content.size()-this->height)
 	{
-		return;
+		this->contentIt = std::prev(this->content.end());
 	}
+	else
+	{
+		this->entryLine += this->height;
 
-	this->entryLine += 10;
-
-	advance(this->contentIt, 10);
+		// compares long int with size_t aka unsigned long int, type cast is required
+		if(std::distance(this->contentIt, this->content.end()) > (long int)this->height)
+		{
+			this->contentIt = std::next(this->contentIt, this->height);
+		}
+		else
+		{
+			this->contentIt = std::prev(this->content.end());
+		}
+	}
 
 	this->currentIndex = 0;
 	this->savedIndex = 0;
@@ -443,14 +487,16 @@ void Cedit::event_pagedown()
 
 void Cedit::event_pageup()
 {
-	if(this->entryLine <= 0)
+	if(this->entryLine < this->height)
 	{
-		return;
+		this->entryLine = 0;
+		this->contentIt = this->content.begin();
 	}
-
-	this->entryLine -= 10;
-
-	advance(this->contentIt, -10);
+	else
+	{
+		this->entryLine -= this->height;
+		this->contentIt = std::prev(this->contentIt, this->height);
+	}
 
 	this->currentIndex = 0;
 	this->savedIndex = 0;
@@ -568,12 +614,8 @@ void Cedit::display_content()
 {
 	wclear(this->wcontent);
 
-	const auto itBegin = std::next(this->content.begin(),this->entryLine);
-
-	const auto itEnd = [](size_t e, size_t h, auto b, auto& c){
-		return e + h >= c.size() ? c.end() : std::next(b, h);
-	}(this->entryLine, this->height, itBegin, this->content);
-	/*      e,               h,         b,            c */
+	const auto itBegin = this->displayFirstIt();
+	const auto itEnd = this->displayLastIt();
 
 	for(auto it = itBegin; it != itEnd; it++)
 	{

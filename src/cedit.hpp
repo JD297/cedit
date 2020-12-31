@@ -58,11 +58,11 @@ public:
 	WINDOW* wmenu;
 	Menu menu;
 
-	const std::size_t width = getmaxx(stdscr);
-	const std::size_t height = getmaxy(stdscr) - 4;
+	std::size_t width = getmaxx(stdscr);
+	std::size_t height = getmaxy(stdscr) - 2;
 
-	const std::size_t rwidth = getmaxx(stdscr);
-	const std::size_t rheight = getmaxy(stdscr);
+	std::size_t rwidth = getmaxx(stdscr);
+	std::size_t rheight = getmaxy(stdscr);
 
 	Cedit();
 
@@ -81,6 +81,14 @@ public:
 	void event_backspace();
 
 	void event_delete();
+
+	std::list<std::string>::iterator displayFirstIt();
+
+	std::list<std::string>::iterator displayLastIt();
+
+	void scrollup(size_t n = 1);
+
+	void scrolldown(size_t n = 1);
 
 	void event_up();
 
