@@ -54,34 +54,34 @@ void Cedit::run()
 				this->isrunning = false;
 				endwin();
 			break;
-			case 263:
+			case KEY_BACKSPACE:
 				this->event_backspace();
 			break;
-			case 330:
+			case KEY_DC:
 				this->event_delete();
 			break;
-			case 260:
+			case KEY_LEFT:
 				this->event_left();
 			break;
-			case 261:
+			case KEY_RIGHT:
 				this->event_right();
 			break;
-			case 259:
+			case KEY_UP:
 				this->event_up();
 			break;
-			case 258:
+			case KEY_DOWN:
 				this->event_down();
 			break;
-			case 338:
+			case KEY_NPAGE:
 				this->event_pagedown();
 			break;
-			case 339:
+			case KEY_PPAGE:
 				this->event_pageup();
 			break;
-			case 262:
+			case KEY_HOME:
 				this->event_pos1();
 			break;
-			case 360:
+			case KEY_END:
 				this->event_end();
 			break;
 			case 12:

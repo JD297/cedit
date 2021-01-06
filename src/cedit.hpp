@@ -42,7 +42,7 @@ public:
 
 	std::size_t entryLine;
 
-	short int key;
+	int key;
 
 	bool refreshDisplay;
 	bool refreshHeader;
