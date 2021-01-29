@@ -1,16 +1,11 @@
-# cedit PRE 1.7.4
+# cedit
 
-# Get the Repo
-git clone https://github.com/JD297/cedit
+# Requirements
+  # Linux Ubuntu
+    sudo apt update && sudo apt install build-essential make libncurses5-dev
 
-cd cedit
-
-# Linux Ubuntu
-sudo apt update && sudo apt install build-essential make libncurses5-dev
-
-# FreeBSD
-pkg install gcc ncurses 
-install libncurses-dev
+  # FreeBSD
+    pkg install gcc ncurses libncurses-dev
 
 # Make commands
 $ make
