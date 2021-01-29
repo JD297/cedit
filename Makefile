@@ -1,26 +1,24 @@
-TARGET=cedit
+TARGET=bin/cedit
+SRC=src
+OBJ=obj
+SRC_FILES=$(wildcard $(SRC)/*.cpp)
+OBJ_FILES=$(patsubst $(SRC)/%.cpp,$(OBJ)/%.o,$(SRC_FILES))
 
-CC=g++
-CFLAGS=-std=c++17 -O3 -Wall -Wextra -Wpedantic
-CLIBS=-lncurses
+CXX=g++
+CXXFLAGS=-std=c++17 -O3 -Wall -Wextra -Wpedantic
+CXXLIBS=-lncurses
 
-OBJS=main.o cedit.o window.o menu.o
-OBJSP=obj/main.o obj/cedit.o obj/window.o obj/menu.o 
+$(TARGET): $(OBJ_FILES)
+	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(CXXLIBS) -o $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJSP) $(CLIBS) -o $(TARGET)
-
-main.o:
-	$(CC) $(CFLAGS) -c src/main.cpp -o obj/main.o
-
-cedit.o:
-	$(CC) $(CFLAGS) -c src/cedit.cpp -o obj/cedit.o
-
-window.o:
-	$(CC) $(CFLAGS) -c src/window.cpp -o obj/window.o
-
-menu.o:
-	$(CC) $(CFLAGS) -c src/menu.cpp -o obj/menu.o
+$(OBJ)/%.o: $(SRC)/%.cpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:
-	$(RM) $(TARGET) $(OBJSP)
+	rm -f $(OBJ_FILES) $(TARGET)
+
+install: $(TARGET)
+	cp $(TARGET) /usr/bin
+
+uninstall:
+	rm -f /usr/$(TARGET)

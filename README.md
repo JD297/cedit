@@ -11,3 +11,7 @@
 $ make
 
 $ make clean
+
+$ make install
+
+$ make uninstall
