@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <bits/stdc++.h>
+#include <regex>
 
 #include "version.hpp"
 #include "menu.hpp"
@@ -123,6 +124,10 @@ public:
 	void display_header();
 
 	void display_content();
+
+	void display_syntax_content(std::string line);
+
+	void window_print_color(WINDOW* window, short color, std::string line);
 
 	void display_help(std::string key, std::string text);
 };

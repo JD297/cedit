@@ -12,7 +12,21 @@ void NCURSES_INIT()
 	keypad(stdscr, true);
 	set_escdelay(100);
 	set_tabsize(4);
-	//setlocale(LC_ALL, "");
+
+	short bg = 0;
+	short fg = 0;
+
+	use_default_colors();
+	start_color();
+
+	// get default colors
+	pair_content(0, &bg, &fg);
+
+	// set colors with default background
+	for(int i = 0; i < 8; i++)
+	{
+		init_pair(i, i, bg);
+	}
 }
 
 namespace cedit

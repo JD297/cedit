@@ -662,14 +662,51 @@ void Cedit::display_content()
 		}
 		else if(!this->quite)
 		{
-			wprintw(this->wcontent, "%s", it->c_str());
+			// wprintw(this->wcontent, "%s", it->c_str());
+			this->display_syntax_content(*it);
 		}
 	}
 
 	for(size_t i = 0; i < this->height - distance(itBegin, itEnd); i++)
 	{
-		wprintw(this->wcontent, "\n~");
+		this->window_print_color(this->wcontent, COLOR_BLUE, "\n~");
+		// wprintw(this->wcontent, "\n~");
 	}
+}
+
+void Cedit::display_syntax_content(std::string line)
+{
+	// syntax key words regex
+	std::regex rgx("(const|void|[^a-zA-Z0-9]int[^a-zA-Z0-9]|return|if|else|while|for|class|namespace|char|switch|case|break|auto)");
+
+	// syntax strings regex
+	// std::regex rgx("\"([^\"]*)\"");
+
+	std::regex_iterator<std::string::iterator> it(line.begin(), line.end(), rgx);
+	std::regex_iterator<std::string::iterator> end;
+
+	std::size_t from = 0;
+	std::size_t to = 0;
+
+	for(; it != end; it++)
+	{
+		to = line.find(it->str(), from);
+
+		wprintw(this->wcontent, "%s", line.substr(from, to - from).c_str());
+
+		this->window_print_color(this->wcontent, COLOR_MAGENTA, it->str());
+
+		from = to + it->str().length();
+	}
+
+	wprintw(this->wcontent, "%s", line.substr(from).c_str());
+}
+
+void Cedit::window_print_color(WINDOW* window, short color, std::string line)
+{
+	wattron(window, COLOR_PAIR(color));
+	wprintw(window, "%s", line.c_str());
+	wattroff(window, COLOR_PAIR(color));
 }
 
 }
