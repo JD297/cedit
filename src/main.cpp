@@ -8,7 +8,7 @@ void NCURSES_INIT()
 	noecho();
 	cbreak();
 	raw();
-	curs_set(0);
+	curs_set(1);
 	keypad(stdscr, true);
 	set_escdelay(100);
 	set_tabsize(4);

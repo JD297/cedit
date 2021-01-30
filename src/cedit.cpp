@@ -421,7 +421,6 @@ void Cedit::event_left()
 	if(this->currentIndex > 0)
 	{
 		this->currentIndex--;
-
 		this->savedIndex = this->currentIndex;
 	}
 	else if(this->currentIndex == 0 && this->contentIt != this->content.begin())
@@ -614,6 +613,8 @@ void Cedit::display_content()
 {
 	wclear(this->wcontent);
 
+	int cursorX = 0, cursorY = 0, cursorXReset = 0;
+
 	const auto itBegin = this->displayFirstIt();
 	const auto itEnd = this->displayLastIt();
 
@@ -628,43 +629,31 @@ void Cedit::display_content()
 			wattron(this->wcontent, A_REVERSE);
 			wprintw(this->wcontent, ss.str().c_str());
 			wattroff(this->wcontent, A_REVERSE);
+
 			wprintw(this->wcontent, " ");
 		}
 
 		if(this->contentIt == it)
 		{
+			getyx(this->wcontent, cursorY, cursorXReset);
+
 			for(std::size_t i = 0; i < it->length(); i++)
 			{
 				if(i == this->currentIndex)
 				{
-					if(it->at(i) == '\n') {
-						wattron(this->wcontent, A_REVERSE);
-						wprintw(this->wcontent, "%c", ' ');
-						wattroff(this->wcontent, A_REVERSE);
-					}
-
-					wattron(this->wcontent, A_REVERSE);
+					getyx(this->wcontent, cursorY, cursorX);
 					wprintw(this->wcontent, "%c", it->at(i));
-					wattroff(this->wcontent, A_REVERSE);
-
 					continue;
 				}
 
 				wprintw(this->wcontent, "%c", it->at(i));
 			}
 
-			if(it->length() <= this->currentIndex)
-			{
-				wattron(this->wcontent, A_REVERSE);
-				wprintw(this->wcontent, "%c", ' ');
-				wattroff(this->wcontent, A_REVERSE);
-			}
+			// next print will override entire line this is important for syntax highlighting
+			wmove(this->wcontent, cursorY, cursorXReset);
 		}
-		else if(!this->quite)
-		{
-			// wprintw(this->wcontent, "%s", it->c_str());
-			this->display_syntax_content(*it);
-		}
+
+		this->display_syntax_content(*it);
 	}
 
 	for(size_t i = 0; i < this->height - distance(itBegin, itEnd); i++)
@@ -672,6 +661,8 @@ void Cedit::display_content()
 		this->window_print_color(this->wcontent, COLOR_BLUE, "\n~");
 		// wprintw(this->wcontent, "\n~");
 	}
+
+	wmove(this->wcontent, cursorY, cursorX);
 }
 
 void Cedit::display_syntax_content(std::string line)
