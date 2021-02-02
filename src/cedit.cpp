@@ -36,9 +36,15 @@ void Cedit::reset()
 
 void Cedit::run()
 {
+	
 	while(this->isrunning)
 	{
-		this->display();
+		if(this->refreshDisplay)
+			this->display();
+		else
+			this->display_current_line();
+
+		this->refreshDisplay = true;
 
 		this->key = wgetch(this->wcontent);
 
@@ -89,9 +95,6 @@ void Cedit::run()
 			break;
 			case 7:
 				this->event_goto();
-			break;
-			case 17:
-				this->event_quite();
 			break;
 			default:
 				this->event_write();
@@ -261,6 +264,7 @@ void Cedit::event_write()
 	{
 		this->currentIndex++;
 		this->savedIndex = this->currentIndex;
+		this->refreshDisplay = false;
 	}
 }
 
@@ -269,7 +273,8 @@ void Cedit::event_backspace()
 	// Wenn am Anfang der Zeile und aktuelle Zeile ist nicht die Erste Zeile
 	if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
-		this->scrollup();
+		this->scrollup(); // TODO check error
+		this->refreshDisplay = true; // this is needed because above is probably something wrong...
 
 		// Überprüfe ob die Zeile die gelöscht werden soll Inhalt enthält
 		if(std::prev(this->contentIt)->length() != 1)
@@ -307,6 +312,7 @@ void Cedit::event_backspace()
 
 		this->currentIndex--;
 		this->savedIndex = this->currentIndex;
+		this->refreshDisplay = false;
 	}
 }
 
@@ -343,6 +349,7 @@ void Cedit::event_delete()
 	{
 		// delete character
 		this->contentIt->erase(this->currentIndex, 1);
+		this->refreshDisplay = false;
 	}
 }
 
@@ -364,6 +371,10 @@ void Cedit::scrollup(size_t n)
 	{
 		this->entryLine--;
 	}
+	else
+	{
+		this->refreshDisplay = false;
+	}
 }
 
 void Cedit::scrolldown(size_t n)
@@ -371,6 +382,10 @@ void Cedit::scrolldown(size_t n)
 	if(this->contentIt == this->displayLastIt() && n == 1)
 	{
 		this->entryLine++;
+	}
+	else
+	{
+		this->refreshDisplay = false;
 	}
 }
 
@@ -396,6 +411,7 @@ void Cedit::event_down()
 {
 	if(this->contentIt == std::prev(this->content.end()))
 	{
+		this->refreshDisplay = false;
 		return;
 	}
 
@@ -422,6 +438,7 @@ void Cedit::event_left()
 	{
 		this->currentIndex--;
 		this->savedIndex = this->currentIndex;
+		this->refreshDisplay = false;
 	}
 	else if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
@@ -441,11 +458,13 @@ void Cedit::event_right()
 	  (this->currentIndex < this->contentIt->length() && contentIt == itEnd)
 	)
 	{
+		//this->refreshDisplay = false;
+
 		if(currentIndex == this->contentIt->length() && this->contentIt->back() != '\n')
 		{
 			return;
 		}
-
+		this->refreshDisplay = false;
 		this->currentIndex++;
 		this->savedIndex = this->currentIndex;
 	}
@@ -505,6 +524,7 @@ void Cedit::event_pos1()
 {
 	this->currentIndex = 0;
 	this->savedIndex = 0;
+	this->refreshDisplay = false;
 }
 
 void Cedit::event_end()
@@ -519,6 +539,8 @@ void Cedit::event_end()
 		this->currentIndex = this->contentIt->length();
 		this->savedIndex = this->contentIt->length();
 	}
+
+	this->refreshDisplay = false;
 }
 
 void Cedit::event_toggle_linenumbers()
@@ -609,11 +631,43 @@ void Cedit::display_header()
 	}
 }
 
+void Cedit::display_current_line()
+{
+	this->cursorY = distance(this->displayFirstIt(), this->contentIt);
+
+	wmove(this->wcontent, this->cursorY, this->cursorXReset);
+
+	for(std::size_t i = 0; i < this->contentIt->length(); i++)
+	{
+		if(i == this->currentIndex)
+		{
+			getyx(this->wcontent, this->cursorY, this->cursorX);
+			wprintw(this->wcontent, "%c", this->contentIt->at(i));
+			continue;
+		}
+
+		wprintw(this->wcontent, "%c", this->contentIt->at(i));
+	}
+
+	if(this->contentIt->length() == 0)
+	{
+		this->cursorX = 0;
+	}
+	else if(this->contentIt->length() == this->currentIndex)
+	{
+		getyx(this->wcontent, this->cursorY, this->cursorX);
+	}
+
+	wmove(this->wcontent, this->cursorY, this->cursorXReset);
+	wclrtoeol(this->wcontent);
+
+	this->display_syntax_content(*this->contentIt);
+	wmove(this->wcontent, this->cursorY, this->cursorX);
+}
+
 void Cedit::display_content()
 {
 	wclear(this->wcontent);
-
-	int cursorX = 0, cursorY = 0, cursorXReset = 0;
 
 	const auto itBegin = this->displayFirstIt();
 	const auto itEnd = this->displayLastIt();
@@ -635,13 +689,13 @@ void Cedit::display_content()
 
 		if(this->contentIt == it)
 		{
-			getyx(this->wcontent, cursorY, cursorXReset);
+			getyx(this->wcontent, this->cursorY, this->cursorXReset);
 
 			for(std::size_t i = 0; i < it->length(); i++)
 			{
 				if(i == this->currentIndex)
 				{
-					getyx(this->wcontent, cursorY, cursorX);
+					getyx(this->wcontent, this->cursorY, this->cursorX);
 					wprintw(this->wcontent, "%c", it->at(i));
 					continue;
 				}
@@ -650,10 +704,20 @@ void Cedit::display_content()
 			}
 
 			// next print will override entire line this is important for syntax highlighting
-			wmove(this->wcontent, cursorY, cursorXReset);
+			wmove(this->wcontent, this->cursorY, this->cursorXReset);
+			wclrtoeol(this->wcontent);
 		}
 
 		this->display_syntax_content(*it);
+
+		if(this->contentIt->length() == 0)
+		{
+			this->cursorX = 0;
+		}
+		else if(this->contentIt->length() == this->currentIndex)
+		{
+			getyx(this->wcontent, this->cursorY, this->cursorX);
+		}
 	}
 
 	for(size_t i = 0; i < this->height - distance(itBegin, itEnd); i++)
@@ -662,7 +726,7 @@ void Cedit::display_content()
 		// wprintw(this->wcontent, "\n~");
 	}
 
-	wmove(this->wcontent, cursorY, cursorX);
+	wmove(this->wcontent, this->cursorY, this->cursorX);
 }
 
 void Cedit::display_syntax_content(std::string line)

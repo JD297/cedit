@@ -54,6 +54,8 @@ public:
 	bool showLineNumbers;
 	bool quite;
 
+	int cursorX = 0, cursorY = 0, cursorXReset = 0;
+
 	WINDOW* wheader;
 	WINDOW* wcontent;
 	WINDOW* wmenu;
@@ -122,6 +124,8 @@ public:
 	void menu_print_clear(const std::string text, const size_t x, const size_t y);
 
 	void display_header();
+
+	void display_current_line();
 
 	void display_content();
 
