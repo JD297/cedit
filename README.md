@@ -15,11 +15,14 @@
 #### FreeBSD
     pkg install gcc ncurses libncurses-dev
 
-# Make commands
+## Make commands
+#### build
     make
-
+#### clean build
     make clean
 
+#### install build
     make install
 
+#### uninstall build
     make uninstall
