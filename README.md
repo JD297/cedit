@@ -1,4 +1,4 @@
-<div align="center">
+# cedit
 
 ![Language](https://img.shields.io/badge/Language-C++-blue.svg?style=flat&logo=c%2B%2B)
 ![Version](https://img.shields.io/github/v/release/jd297/cedit.svg)
@@ -6,24 +6,20 @@
 ![Lastcommit](https://img.shields.io/github/last-commit/jd297/cedit.svg)
 ![Total lines](https://img.shields.io/tokei/lines/github/jd297/cedit)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/issues)
-[![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/pulls)
+[![GitHub closed pulls](https://img.shields.io/github/issues-pr-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/pulls)
 
-</div>
-
-# cedit
-
-# Requirements
-  # Linux Ubuntu
+## Requirements
+#### Linux Ubuntu
     sudo apt update && sudo apt install build-essential make libncurses5-dev
 
-  # FreeBSD
+#### FreeBSD
     pkg install gcc ncurses libncurses-dev
 
 # Make commands
-$ make
+    make
 
-$ make clean
+    make clean
 
-$ make install
+    make install
 
-$ make uninstall
+    make uninstall
