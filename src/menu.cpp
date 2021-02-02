@@ -97,8 +97,6 @@ void Menu::event_pos_end() {
 // true: OK
 // false: error or user terminated (strg+c)
 [[nodiscard]] bool Menu::type(const char* text, const char* content) {
-    curs_set(1);
-
     this->content = content;
     this->currentIndex = 0;
 
@@ -111,16 +109,14 @@ void Menu::event_pos_end() {
         switch(this->key) {
             case 10: // OK enter
                 wbkgd(this->window, A_NORMAL);
-                this->window_clear_refresh();
+				this->window_clear_refresh();
 
-                curs_set(0);
                 return this->content.length() > 0;
             break;
             case 3: // abort strg+c
                 wbkgd(this->window, A_NORMAL);
                 this->window_clear_refresh();
 
-                curs_set(0);
                 return false;
             break;
             case KEY_LEFT:
