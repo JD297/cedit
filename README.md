@@ -8,10 +8,10 @@
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/issues)
 [![GitHub closed pulls](https://img.shields.io/github/issues-pr-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/pulls)
     
-<img src="https://lh4.googleusercontent.com/YDC0LGF5MckCp5mn62GTn0hOjPOiCtkGnM-ctjVdxK9yS5nt8xRGsTrmkXMBDhc99tXMzT-EbAHzMGdxwaPS=w1920-h937" align="center" height="100" >
+<img src="https://raw.githubusercontent.com/JD297/cedit/master/img/cedit_logo.gif" align="center" height="100" >
 
 ## Overview
-![cedit overview](https://lh6.googleusercontent.com/b_KyA5ZkFp09BqvO7Yq5JumSLenn66YzMyUFgkRvCCAiDiDuCLcKZ4qhcwiqH9sycpSzjNh0rRMRX7qf8FVr=w1920-h937)
+![cedit overview](https://raw.githubusercontent.com/JD297/cedit/master/img/cedit_overview.png)
 
 ## Requirements
 #### Linux Ubuntu
