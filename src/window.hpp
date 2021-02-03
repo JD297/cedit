@@ -14,7 +14,7 @@ public:
     std::size_t height;
 
     Window(std::size_t sizeX, std::size_t sizeY, std::size_t posX, std::size_t posY);
-    
+
     void window_clear_refresh();
 };
 

@@ -55,7 +55,7 @@ void Cedit::run()
 			case 15:
 				this->event_open();
 			break;
-			case 27: //TODO ask to save before exit if needed
+			case 27:
 				this->isrunning = false;
 				endwin();
 			break;
@@ -272,10 +272,9 @@ void Cedit::event_backspace()
 	// Wenn am Anfang der Zeile und aktuelle Zeile ist nicht die Erste Zeile
 	if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
-		this->scrollup(); // TODO check error
-		this->refreshDisplay = true; // this is needed because above is probably something wrong...
+		this->scrollup();
 
-		// Überprüfe ob die Zeile die gelöscht werden soll Inhalt enthält
+		// check ob die Zeile die gelöscht werden soll Inhalt enthält
 		if(std::prev(this->contentIt)->length() != 1)
 		{
 			// Springe in die vorherige Zeile
@@ -715,7 +714,7 @@ void Cedit::display_content()
 		}
 
 		// last line to print to screen
-		if(it != std::prev(this->content.end()) && it == std::prev(itEnd) && it->at(it->length() - 1) == '\n') 
+		if(it != std::prev(this->content.end()) && it == std::prev(itEnd) && it->at(it->length() - 1) == '\n')
 		{
 			this->display_syntax_content(it->substr(0, it->length() - 1));
 		}

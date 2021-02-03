@@ -40,7 +40,7 @@ void Menu::display_type(const char* text) {
 
     mvwprintw(this->window, 0, std::strlen(text), "%s", this->content.c_str());
 
-    wmove(this->window, 0, std::strlen(text) + this->currentIndex); // Cursour
+    wmove(this->window, 0, std::strlen(text) + this->currentIndex);
 }
 
 void Menu::event_insert() {
@@ -92,10 +92,6 @@ void Menu::event_pos_end() {
     this->currentIndex = this->content.length();
 }
 
-// nodiscard: Rueckgabewert MUSS verarbeitet werden im Code(z.B if), wenn nicht
-// warnt der Compiler.
-// true: OK
-// false: error or user terminated (strg+c)
 [[nodiscard]] bool Menu::type(const char* text, const char* content) {
     this->content = content;
     this->currentIndex = 0;
@@ -107,7 +103,7 @@ void Menu::event_pos_end() {
         this->key = wgetch(this->window);
 
         switch(this->key) {
-            case 10: // OK enter
+            case 10:
                 wbkgd(this->window, A_NORMAL);
 				this->window_clear_refresh();
 
