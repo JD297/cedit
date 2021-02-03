@@ -11,8 +11,7 @@ Cedit::Cedit():
 	refreshHeader(true),
 	isrunning(true),
 	filename(""),
-	showLineNumbers(false),
-	quite(false)
+	showLineNumbers(false)
 {
 	this->wheader = newwin(1, this->width, 0, 0);
 	this->wcontent = newwin(this->height, this->width, 1, 0);
@@ -579,11 +578,6 @@ void Cedit::event_goto()
 	}
 }
 
-void Cedit::event_quite()
-{
-	this->quite = !this->quite;
-}
-
 void Cedit::display()
 {
 	this->display_header();
@@ -687,7 +681,7 @@ void Cedit::display_content()
 	for(auto it = itBegin; it != itEnd; it++)
 	{
 		// Zeilenangabe ausgeben, wenn aktiviert strg+l
-		if(this->showLineNumbers && !this->quite)
+		if(this->showLineNumbers)
 		{
 			std::stringstream ss;
 			ss <<  " " << std::setw(3) << distance(itBegin, it) + entryLine + 1;

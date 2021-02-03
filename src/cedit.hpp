@@ -52,7 +52,6 @@ public:
 	std::string filename;
 
 	bool showLineNumbers;
-	bool quite;
 
 	int cursorX = 0, cursorY = 0, cursorXReset = 0;
 
@@ -112,8 +111,6 @@ public:
 	void event_toggle_linenumbers();
 
 	void event_goto();
-
-	void event_quite();
 
 	void display();
 
