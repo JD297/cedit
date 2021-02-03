@@ -22,6 +22,7 @@ Cedit::Cedit():
 	this->contentIt = this->content.begin();
 
 	keypad(this->wcontent, true);
+	scrollok(this->wcontent, true);
 }
 
 void Cedit::reset()
@@ -36,7 +37,6 @@ void Cedit::reset()
 
 void Cedit::run()
 {
-	
 	while(this->isrunning)
 	{
 		if(this->refreshDisplay)
@@ -370,10 +370,7 @@ void Cedit::scrollup(size_t n)
 	if(this->contentIt == this->displayFirstIt() && n == 1)
 	{
 		this->entryLine--;
-	}
-	else
-	{
-		this->refreshDisplay = false;
+		wscrl(this->wcontent, -1);
 	}
 }
 
@@ -382,15 +379,14 @@ void Cedit::scrolldown(size_t n)
 	if(this->contentIt == this->displayLastIt() && n == 1)
 	{
 		this->entryLine++;
-	}
-	else
-	{
-		this->refreshDisplay = false;
+		wscrl(this->wcontent, 1);
 	}
 }
 
 void Cedit::event_up()
 {
+	this->refreshDisplay = false;
+
 	if(this->contentIt != this->content.begin())
 	{
 		this->scrollup();
@@ -409,9 +405,10 @@ void Cedit::event_up()
 
 void Cedit::event_down()
 {
+	this->refreshDisplay = false;
+
 	if(this->contentIt == std::prev(this->content.end()))
 	{
-		this->refreshDisplay = false;
 		return;
 	}
 
@@ -434,11 +431,12 @@ void Cedit::event_down()
 
 void Cedit::event_left()
 {
+	this->refreshDisplay = false;
+
 	if(this->currentIndex > 0)
 	{
 		this->currentIndex--;
 		this->savedIndex = this->currentIndex;
-		this->refreshDisplay = false;
 	}
 	else if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
@@ -452,18 +450,19 @@ void Cedit::event_left()
 
 void Cedit::event_right()
 {
+	this->refreshDisplay = false;
+
 	const auto itEnd = std::prev(this->content.end());
 
 	if(this->currentIndex < this->contentIt->length()-1 ||
 	  (this->currentIndex < this->contentIt->length() && contentIt == itEnd)
 	)
 	{
-		//this->refreshDisplay = false;
-
 		if(currentIndex == this->contentIt->length() && this->contentIt->back() != '\n')
 		{
 			return;
 		}
+
 		this->refreshDisplay = false;
 		this->currentIndex++;
 		this->savedIndex = this->currentIndex;
@@ -633,6 +632,13 @@ void Cedit::display_header()
 
 void Cedit::display_current_line()
 {
+	bool isLastline = this->contentIt != std::prev(this->content.end()) && this->contentIt == std::prev(this->displayLastIt()) && this->contentIt->at(this->contentIt->length() - 1) == '\n';
+
+	if(isLastline)
+	{
+		this->contentIt->pop_back();
+	}
+
 	this->cursorY = distance(this->displayFirstIt(), this->contentIt);
 
 	wmove(this->wcontent, this->cursorY, this->cursorXReset);
@@ -662,6 +668,12 @@ void Cedit::display_current_line()
 	wclrtoeol(this->wcontent);
 
 	this->display_syntax_content(*this->contentIt);
+
+	if(isLastline)
+	{
+		this->contentIt->append("\n");
+	}
+
 	wmove(this->wcontent, this->cursorY, this->cursorX);
 }
 
@@ -708,7 +720,15 @@ void Cedit::display_content()
 			wclrtoeol(this->wcontent);
 		}
 
-		this->display_syntax_content(*it);
+		// last line to print to screen
+		if(it != std::prev(this->content.end()) && it == std::prev(itEnd) && it->at(it->length() - 1) == '\n') 
+		{
+			this->display_syntax_content(it->substr(0, it->length() - 1));
+		}
+		else
+		{
+			this->display_syntax_content(*it);
+		}
 
 		if(this->contentIt->length() == 0)
 		{
