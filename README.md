@@ -6,7 +6,6 @@
 ![Lastcommit](https://img.shields.io/github/last-commit/jd297/cedit.svg)
 ![Total lines](https://img.shields.io/tokei/lines/github/jd297/cedit)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/issues)
-[![GitHub closed pulls](https://img.shields.io/github/issues-pr-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/pulls)
     
 <img src="https://raw.githubusercontent.com/JD297/cedit/master/img/cedit_logo.gif" align="center" height="100" >
 
