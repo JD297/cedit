@@ -3,8 +3,22 @@
 
 #define VERSION "cedit 1.8.0"
 
-#define SAVE_MESSAGE "Zeilen geschrieben"
-#define LOAD_MESSAGE "Zeilen gelesen"
-#define FILE_OPEN_MESSAGE "Dateiname zum offnen [von ./]: "
+#define NEW_FILE "New file"
+
+#define SAVE "lines wrote"
+#define LOAD "lines read"
+
+#define FAIL_READ "Error while reading file: "
+
+#define FILE_OPEN "Filename to open [from ./]: "
+#define FILE_SAVE "Filename to save [from ./]: "
+
+#define IS_DIRECTORY " is a directory"
+#define IS_BLOCK_FILE " is a block device"
+#define IS_CHARACTER_FILE " is a character device"
+#define IS_FIFO " is a named IPC pipe"
+#define IS_SOCKET " is a named IPC socket"
+#define IS_SYMLINK " is a symlink"
+#define IS_NOT_REGULAR_FILE " is not a regular file"
 
 #endif

@@ -104,10 +104,9 @@ void Cedit::run()
 
 void Cedit::event_save()
 {
-
 	if(this->filename.empty())
 	{
-		if(!this->menu.type("Dateiname zum Speichern [von ./]: ")) {
+		if(!this->menu.type(FILE_SAVE)) {
 			return;
 		}
 
@@ -133,51 +132,79 @@ void Cedit::event_save()
 
 	output.close();
 
-	std::stringstream menu_text;
-	menu_text << content.size()-1 << " " << SAVE_MESSAGE;
-
-	this->menu.display(&menu_text);
+	this->menu.display(std::to_string(content.size()-1) + " " + SAVE);
 }
 
 void Cedit::event_load(const char* filename)
 {
+	std::string message = "";
+	std::string message_filename = "\"" + std::string(filename) + "\"";
+
+	const auto fs_status = std::filesystem::status(filename);
+
+	if(std::filesystem::is_directory(fs_status)) {
+		this->menu.display(message_filename + IS_DIRECTORY);
+
+		return;
+	}
+	else if(std::filesystem::is_block_file(fs_status))
+	{
+		this->menu.display(message_filename + IS_BLOCK_FILE);
+
+		return;
+	}
+	else if(std::filesystem::is_character_file(fs_status))
+	{
+		this->menu.display(message_filename + IS_CHARACTER_FILE);
+
+		return;
+	}
+	else if(std::filesystem::is_fifo(fs_status))
+	{
+		this->menu.display(message_filename + IS_FIFO);
+
+		return;
+	}
+	else if(std::filesystem::is_socket(fs_status))
+	{
+		this->menu.display(message_filename + IS_SOCKET);
+
+		return;
+	}
+	else if(std::filesystem::is_symlink(fs_status))
+	{
+		this->menu.display(message_filename + IS_SYMLINK);
+
+		return;
+	}
+	else if(!std::filesystem::is_regular_file(fs_status))
+	{
+		this->menu.display(message_filename + IS_NOT_REGULAR_FILE);
+
+		return;
+	}
+
 	this->filename = std::string(filename);
 
 	std::ifstream f(this->filename, std::ios::in);
 
-	this->content.clear();
-
-	this->refreshHeader = true;
-
-	std::string message = "";
-
-	// Not a regular file
-	if(false) {
-		this->filename = "";
-
-		message = "[ " + std::string(filename) + " is not a regular file ]";
-	}
-
-	// File error
 	if(!f.good())
 	{
 		if(errno)
 		{
-			this->filename = "";
-
-			message = "[ Fehler beim Lesen von: " + std::string(filename) + " : " + std::strerror(errno)  + " ]";
+			this->menu.display(FAIL_READ + std::string(filename) + " : " + std::strerror(errno));
 		}
 		else
 		{
-			message = "[ Neue Datei ]";
+			this->menu.display(NEW_FILE);
 		}
-
-		wattron(this->wmenu, A_REVERSE);
-		menu_print_clear(message.c_str(), (size_t)(this->width / 2 - message.length() / 2), 0);
-		wattroff(this->wmenu, A_REVERSE);
 
 		return;
 	}
+
+	this->content.clear();
+
+	this->refreshHeader = true;
 
 	while(!f.eof())
 	{
@@ -186,6 +213,7 @@ void Cedit::event_load(const char* filename)
 
 		this->content.emplace_back(temp+"\n");
 	}
+
 	f.close();
 
 	this->content.rbegin()->clear();
@@ -201,15 +229,12 @@ void Cedit::event_load(const char* filename)
 		this->showLineNumbers = this->brain[this->filename].showLineNumbers;
 	}
 
-	std::stringstream menu_text;
-	menu_text << this->content.size()-1 << " " << LOAD_MESSAGE;
-
-	this->menu.display(&menu_text);
+	this->menu.display(std::to_string(this->content.size()-1) + " " + LOAD);
 }
 
 void Cedit::event_open()
 {
-	if(!this->menu.type(FILE_OPEN_MESSAGE)) {
+	if(!this->menu.type(FILE_OPEN)) {
 		return;
 	}
 
@@ -583,32 +608,9 @@ void Cedit::display()
 	this->display_content();
 }
 
-void Cedit::menu_reset()
-{
-        wbkgd(this->wmenu, A_NORMAL);
-        wclear(this->wmenu);
-        wrefresh(this->wmenu);
-}
-
-void Cedit::menu_print(const std::string text, const size_t x = 0, const size_t y = 0)
-{
-	mvwprintw(this->wmenu, y, x, "%s", text.c_str());
-
-	wrefresh(this->wmenu);
-}
-
-void Cedit::menu_print_clear(const std::string text, const size_t x = 0, const size_t y = 0)
-{
-	wclear(this->wmenu);
-
-	mvwprintw(this->wmenu, y, x, "%s", text.c_str());
-
-	wrefresh(this->wmenu);
-}
-
 void Cedit::display_header()
 {
-	const std::string filename = this->filename.empty() ? "Neue Datei" : this->filename;
+	const std::string filename = this->filename.empty() ? NEW_FILE : this->filename;
 
 	if(this->refreshHeader)
 	{

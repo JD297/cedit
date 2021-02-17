@@ -2,32 +2,16 @@
 
 namespace cedit {
 
-Menu::Menu() : Window(getmaxx(stdscr), 1, 0, getmaxy(stdscr) - 1) {
+Menu::Menu() : Window(getmaxx(stdscr), 1, 0, getmaxy(stdscr) - 1) {}
 
-}
-
-void Menu::display(std::stringstream* text) {
-	wbkgd(this->window, A_REVERSE);
+void Menu::display(std::string message) {
 	wclear(this->window);
 
-	// Demo Code
-	// const std::string session = "[0]cedit.cpp [1]version.hpp*";
-	// Demo Code End
+	message = "[ " + message + " ]";
 
-	// mvwprintw(this->window, 0, 0, session.c_str());
-
-	if(!text->str().empty()) {
-		const std::string message = text->str();
-		text->str("");
-		text->clear();
-
-		*text << "[ " << message << " ]";
-
-		mvwprintw(this->window, 0, (size_t)(getmaxx(stdscr) / 2 - text->str().length() / 2), text->str().c_str());
-	}
-
-	text->str("");
-	text->clear();
+	wattron(this->window, A_REVERSE);
+	mvwprintw(this->window, 0, (size_t)(getmaxx(stdscr) / 2 - message.length() / 2), message.c_str());
+	wattroff(this->window, A_REVERSE);
 
 	wrefresh(this->window);
 }

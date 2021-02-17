@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <bits/stdc++.h>
 #include <regex>
+#include <filesystem>
 
 #include "version.hpp"
 #include "menu.hpp"
@@ -113,12 +114,6 @@ public:
 	void event_goto();
 
 	void display();
-
-	void menu_reset();
-
-	void menu_print(const std::string text, const size_t x, const size_t y);
-
-	void menu_print_clear(const std::string text, const size_t x, const size_t y);
 
 	void display_header();
 
