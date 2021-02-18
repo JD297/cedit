@@ -9,6 +9,7 @@
 #define LOAD "lines read"
 
 #define FAIL_READ "Error while reading file: "
+#define FAIL_WRITE "Error while saving file: "
 
 #define FILE_OPEN "Filename to open [from ./]: "
 #define FILE_SAVE "Filename to save [from ./]: "

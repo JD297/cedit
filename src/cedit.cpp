@@ -115,22 +115,32 @@ void Cedit::event_save()
 		this->refreshHeader = true;
 	}
 
-	// TODO error checking
-	std::ofstream output;
-	output.open(this->filename.c_str());
+	std::ofstream f(this->filename.c_str());
 
-	if(auto it = std::prev(this->content.end()); !it->empty())
+	auto itEnd = std::prev(this->content.end());
+
+	if(!itEnd->empty())
 	{
-		it->append("\n");
-		this->content.emplace_back(""); // REMOVE ???
+		itEnd->append("\n");
+		this->content.emplace_back("");
 	}
 
-	for(auto it = this->content.begin(); it != std::prev(this->content.end()); it++)
+	for(auto it = this->content.begin(); it != itEnd; it++)
 	{
-		output << *it;
+		f << *it;
 	}
 
-	output.close();
+	f.close();
+
+	if(!f)
+	{
+		if(errno)
+		{
+			this->menu.display(std::string(FAIL_WRITE) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
+		}
+
+		return;
+	}
 
 	this->menu.display(std::to_string(content.size()-1) + " " + SAVE);
 }
@@ -184,23 +194,25 @@ void Cedit::event_load(const char* filename)
 		return;
 	}
 
-	this->filename = std::string(filename);
-
-	std::ifstream f(this->filename, std::ios::in);
+	std::ifstream f(std::string(filename), std::ios::in);
 
 	if(!f.good())
 	{
 		if(errno)
 		{
-			this->menu.display(FAIL_READ + std::string(filename) + " : " + std::strerror(errno));
+			this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
 		}
 		else
 		{
 			this->menu.display(NEW_FILE);
 		}
 
+		this->filename = "";
+
 		return;
 	}
+
+	this->filename = std::string(filename);
 
 	this->content.clear();
 
