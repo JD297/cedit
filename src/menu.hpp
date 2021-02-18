@@ -23,7 +23,7 @@ public:
 
 	[[nodiscard]] bool type(const char* text, const char* content = "");
 
-	void display(std::string text);
+	void display(std::string text, short color = 0);
 private:
 	std::size_t currentIndex;
 

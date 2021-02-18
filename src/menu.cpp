@@ -4,14 +4,18 @@ namespace cedit {
 
 Menu::Menu() : Window(getmaxx(stdscr), 1, 0, getmaxy(stdscr) - 1) {}
 
-void Menu::display(std::string message) {
+void Menu::display(std::string message, short color) {
 	wclear(this->window);
 
 	message = "[ " + message + " ]";
 
+	wattron(this->window, COLOR_PAIR(color));
 	wattron(this->window, A_REVERSE);
+
 	mvwprintw(this->window, 0, (size_t)(getmaxx(stdscr) / 2 - message.length() / 2), message.c_str());
+
 	wattroff(this->window, A_REVERSE);
+	wattroff(this->window, COLOR_PAIR(color));
 
 	wrefresh(this->window);
 }

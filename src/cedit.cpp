@@ -136,7 +136,7 @@ void Cedit::event_save()
 	{
 		if(errno)
 		{
-			this->menu.display(std::string(FAIL_WRITE) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
+			this->menu.display(std::string(FAIL_WRITE) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno), COLOR_RED);
 		}
 
 		return;
@@ -164,43 +164,43 @@ void Cedit::event_load(const char* filename)
 		return;
 	}
 	else if(std::filesystem::is_directory(fs_status)) {
-		this->menu.display(message_filename + IS_DIRECTORY);
+		this->menu.display(message_filename + IS_DIRECTORY, COLOR_RED);
 
 		return;
 	}
 	else if(std::filesystem::is_block_file(fs_status))
 	{
-		this->menu.display(message_filename + IS_BLOCK_FILE);
+		this->menu.display(message_filename + IS_BLOCK_FILE, COLOR_YELLOW);
 
 		return;
 	}
 	else if(std::filesystem::is_character_file(fs_status))
 	{
-		this->menu.display(message_filename + IS_CHARACTER_FILE);
+		this->menu.display(message_filename + IS_CHARACTER_FILE, COLOR_YELLOW);
 
 		return;
 	}
 	else if(std::filesystem::is_fifo(fs_status))
 	{
-		this->menu.display(message_filename + IS_FIFO);
+		this->menu.display(message_filename + IS_FIFO, COLOR_YELLOW);
 
 		return;
 	}
 	else if(std::filesystem::is_socket(fs_status))
 	{
-		this->menu.display(message_filename + IS_SOCKET);
+		this->menu.display(message_filename + IS_SOCKET, COLOR_YELLOW);
 
 		return;
 	}
 	else if(std::filesystem::is_symlink(fs_status))
 	{
-		this->menu.display(message_filename + IS_SYMLINK);
+		this->menu.display(message_filename + IS_SYMLINK, COLOR_YELLOW);
 
 		return;
 	}
 	else if(!std::filesystem::is_regular_file(fs_status))
 	{
-		this->menu.display(message_filename + IS_NOT_REGULAR_FILE);
+		this->menu.display(message_filename + IS_NOT_REGULAR_FILE, COLOR_YELLOW);
 
 		return;
 	}
@@ -211,7 +211,7 @@ void Cedit::event_load(const char* filename)
 	{
 		if(errno)
 		{
-			this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
+			this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno), COLOR_RED);
 		}
 		else
 		{
