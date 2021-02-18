@@ -125,7 +125,7 @@ void Cedit::event_save()
 		this->content.emplace_back("");
 	}
 
-	for(auto it = this->content.begin(); it != itEnd; it++)
+	for(auto it = this->content.begin(); it != this->content.end(); it++)
 	{
 		f << *it;
 	}
@@ -152,7 +152,18 @@ void Cedit::event_load(const char* filename)
 
 	const auto fs_status = std::filesystem::status(filename);
 
-	if(std::filesystem::is_directory(fs_status)) {
+	if(!std::filesystem::exists(fs_status))
+	{
+		this->reset();
+
+		this->filename = std::string(filename);
+		this->refreshHeader = true;
+
+		this->menu.display(NEW_FILE);
+
+		return;
+	}
+	else if(std::filesystem::is_directory(fs_status)) {
 		this->menu.display(message_filename + IS_DIRECTORY);
 
 		return;
