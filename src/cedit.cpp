@@ -388,18 +388,18 @@ std::list<std::string>::iterator Cedit::displayLastIt()
 	return this->entryLine + this->height >= this->content.size() ? this->content.end() : std::next(itBegin, this->height);
 }
 
-void Cedit::scrollup(size_t n)
+void Cedit::scrollup()
 {
-	if(this->contentIt == this->displayFirstIt() && n == 1)
+	if(this->contentIt == this->displayFirstIt())
 	{
 		this->entryLine--;
 		wscrl(this->wcontent, -1);
 	}
 }
 
-void Cedit::scrolldown(size_t n)
+void Cedit::scrolldown()
 {
-	if(this->contentIt == this->displayLastIt() && n == 1)
+	if(this->contentIt == this->displayLastIt())
 	{
 		this->entryLine++;
 		wscrl(this->wcontent, 1);

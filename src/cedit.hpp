@@ -89,9 +89,9 @@ public:
 
 	std::list<std::string>::iterator displayLastIt();
 
-	void scrollup(size_t n = 1);
+	void scrollup();
 
-	void scrolldown(size_t n = 1);
+	void scrolldown();
 
 	void event_up();
 
