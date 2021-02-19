@@ -17,6 +17,8 @@
 
 #include "version.hpp"
 #include "menu.hpp"
+#include "regex.hpp"
+#include "syntax.hpp"
 
 namespace cedit {
 

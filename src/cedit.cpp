@@ -769,27 +769,45 @@ void Cedit::display_content()
 
 void Cedit::display_syntax_content(std::string line)
 {
-	// syntax key words regex
-	std::regex rgx("(const|void|[^a-zA-Z0-9]int[^a-zA-Z0-9]|return|if|else|while|for|class|namespace|char|switch|case|break|auto)");
+	std::list<Regex> rlist;
 
-	// syntax strings regex
-	// std::regex rgx("\"([^\"]*)\"");
+	rlist.push_back(*(new Regex("(int)", &line, COLOR_RED)));
+	rlist.push_back(*(new Regex("\"([^\"]*)\"", &line, COLOR_YELLOW)));
+	rlist.push_back(*(new Regex("#include", &line, COLOR_BLUE)));
 
-	std::regex_iterator<std::string::iterator> it(line.begin(), line.end(), rgx);
-	std::regex_iterator<std::string::iterator> end;
+	std::list<Syntax> slist;
 
-	std::size_t from = 0;
-	std::size_t to = 0;
-
-	for(; it != end; it++)
+	for(auto rlit = rlist.begin(); rlit != rlist.end(); rlit++)
 	{
-		to = line.find(it->str(), from);
+		std::size_t rfrom = 0;
+
+		for(std::regex_iterator<std::string::iterator> end; rlit->it != end; rlit->it++)
+		{
+			rfrom = line.find(rlit->it->str(), rfrom);
+
+			slist.push_back(*(new Syntax(
+				rfrom,
+				rlit->it->str(),
+				rlit->color
+			)));
+
+			rfrom++;
+		}
+	}
+
+	slist.sort();
+
+	std::size_t from = 0, to = 0;
+
+	for(auto it = slist.begin(); it != slist.end(); it++)
+	{
+		to = line.find(it->text, from);
 
 		wprintw(this->wcontent, "%s", line.substr(from, to - from).c_str());
 
-		this->window_print_color(this->wcontent, COLOR_MAGENTA, it->str());
+		this->window_print_color(this->wcontent, it->color, it->text);
 
-		from = to + it->str().length();
+		from = to + it->text.length();
 	}
 
 	wprintw(this->wcontent, "%s", line.substr(from).c_str());
