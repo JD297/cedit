@@ -5,8 +5,11 @@ SRC_FILES=$(wildcard $(SRC)/*.cpp)
 OBJ_FILES=$(patsubst $(SRC)/%.cpp,$(OBJ)/%.o,$(SRC_FILES))
 
 CXX=g++
+# OpenBSD (uncomment)
+#CXX=eg++
+
 CXXFLAGS=-std=c++17 -O3 -Wall -Wextra -Wpedantic
-CXXLIBS=-lncurses
+CXXLIBS=-lncurses -stdc++fs
 
 $(TARGET): $(OBJ_FILES)
 	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(CXXLIBS) -o $(TARGET)
@@ -15,7 +18,7 @@ $(OBJ)/%.o: $(SRC)/%.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(OBJ_FILES) $(TARGET)
+	rm -f $(OBJ)/*.o $(TARGET)
 
 install: $(TARGET)
 	cp $(TARGET) /usr/bin
