@@ -22,6 +22,8 @@
 ## Make commands
 #### build
     make
+    
+    gmake on OpenBSD
 #### clean build
     make clean
 
