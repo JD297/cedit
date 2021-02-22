@@ -9,7 +9,7 @@ CXX=g++
 #CXX=eg++
 
 CXXFLAGS=-std=c++17 -O3 -Wall -Wextra -Wpedantic
-CXXLIBS=-lncurses -stdc++fs
+CXXLIBS=-lncurses -lstdc++fs
 
 $(TARGET): $(OBJ_FILES)
 	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(CXXLIBS) -o $(TARGET)
