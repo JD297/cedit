@@ -771,9 +771,67 @@ void Cedit::display_syntax_content(std::string line)
 {
 	std::list<Regex> rlist;
 
-	rlist.push_back(*(new Regex("(int)", &line, COLOR_RED)));
-	rlist.push_back(*(new Regex("\"([^\"]*)\"", &line, COLOR_YELLOW)));
-	rlist.push_back(*(new Regex("#include", &line, COLOR_BLUE)));
+	std::string syntax_filename = std::string(getenv("HOME")) + "/.cedit/c.ceditrc";
+
+	if(std::filesystem::exists(syntax_filename))
+	{
+		std::ifstream f(syntax_filename, std::ios::in);
+
+		if(f.good())
+		{
+			while(!f.eof())
+			{
+				std::string temp;
+				getline(f, temp);
+
+				// found color syntax
+				if(temp.find("color") == 0)
+				{
+					// prepare rule
+					std::size_t first = temp.find("\"") + 1;
+					std::size_t last = temp.rfind("\"");
+
+					std::string rule = temp.substr(first, last - first);
+
+					rule = std::regex_replace(rule, std::regex("<"), "b");
+					rule = std::regex_replace(rule, std::regex(">"), "b");
+
+					// prepare color
+					std::size_t color_first = 6;
+					std::size_t color_last  = temp.find(" ", color_first + 1);
+
+					std::string color_string = temp.substr(color_first, color_last - color_first);
+
+					short color = 0;
+
+					if(color_string == "green")
+					{
+						color = COLOR_GREEN;
+					}
+					else if(color_string == "yellow")
+					{
+						color = COLOR_YELLOW;
+					}
+					else if(color_string == "magenta")
+					{
+						color = COLOR_MAGENTA;
+					}
+					else if(color_string == "cyan")
+					{
+						color = COLOR_CYAN;
+					}
+					else
+					{
+						color = COLOR_RED;
+					}
+
+					rlist.push_back(*(new Regex(rule, &line, color)));
+				}
+			}
+		}
+
+		f.close();
+	}
 
 	std::list<Syntax> slist;
 

@@ -14,6 +14,7 @@
 #include <bits/stdc++.h>
 #include <regex>
 #include <filesystem>
+#include <stdlib.h>
 
 #include "version.hpp"
 #include "menu.hpp"
