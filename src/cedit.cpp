@@ -15,7 +15,6 @@ Cedit::Cedit():
 {
 	this->wheader = newwin(1, this->width, 0, 0);
 	this->wcontent = newwin(this->height, this->width, 1, 0);
-	this->wmenu = newwin(1, this->width, this->rheight - 1, 0);
 
 	this->content.emplace_back("");
 	this->contentIt = this->content.begin();
@@ -94,6 +93,9 @@ void Cedit::run()
 			break;
 			case 7:
 				this->event_goto();
+			break;
+			case 20:
+				this->event_change_tab();
 			break;
 			default:
 				this->event_write();
@@ -626,6 +628,47 @@ void Cedit::event_goto()
 			this->savedIndex = 0;
 		}
 	}
+}
+
+void Cedit::event_change_tab()
+{
+	if(this->session.size() == 0)
+	{
+		return;
+	}
+
+	short int key = wgetch(this->menu.window);
+
+	auto mapIt = this->session.find(this->filename);
+
+	if(key == KEY_LEFT)
+	{
+		if(mapIt == this->session.begin())
+		{
+			mapIt = std::prev(this->session.end());
+		}
+		else
+		{
+			mapIt = std::prev(mapIt);
+		}
+	}
+	else if(key == KEY_RIGHT)
+	{
+		if(mapIt == this->session.end() || mapIt == std::prev(this->session.end()))
+		{
+			mapIt = this->session.begin();
+		}
+		else
+		{
+			mapIt = std::next(mapIt);
+		}
+	}
+	else
+	{
+		return;
+	}
+
+	this->event_load(mapIt->first.c_str());
 }
 
 void Cedit::display()

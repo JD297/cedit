@@ -61,7 +61,7 @@ public:
 
 	WINDOW* wheader;
 	WINDOW* wcontent;
-	WINDOW* wmenu;
+
 	Menu menu;
 
 	std::size_t width = getmaxx(stdscr);
@@ -115,6 +115,8 @@ public:
 	void event_toggle_linenumbers();
 
 	void event_goto();
+
+	void event_change_tab();
 
 	void display();
 
