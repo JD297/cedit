@@ -147,6 +147,20 @@ void Cedit::event_save()
 
 void Cedit::event_load(const char* filename)
 {
+	if(!this->filename.empty())
+	{
+		this->session[this->filename] = {
+			this->content,
+			std::distance(this->content.begin(), this->contentIt),
+			this->currentIndex,
+			this->savedIndex,
+			this->entryLine,
+			this->showLineNumbers
+		};
+	}
+
+	this->reset();
+
 	std::string message = "";
 	std::string message_filename = "\"" + std::string(filename) + "\"";
 
@@ -154,8 +168,6 @@ void Cedit::event_load(const char* filename)
 
 	if(!std::filesystem::exists(fs_status))
 	{
-		this->reset();
-
 		this->filename = std::string(filename);
 		this->refreshHeader = true;
 
@@ -225,16 +237,16 @@ void Cedit::event_load(const char* filename)
 
 	this->filename = std::string(filename);
 
-	this->content.clear();
-
 	this->refreshHeader = true;
+
+	this->content.clear();
 
 	while(!f.eof())
 	{
-		std::string temp;
-		getline(f, temp);
+		std::string line;
+		getline(f, line);
 
-		this->content.emplace_back(temp+"\n");
+		this->content.emplace_back(line+"\n");
 	}
 
 	f.close();
@@ -243,13 +255,13 @@ void Cedit::event_load(const char* filename)
 
 	this->contentIt = this->content.begin();
 
-	if(this->brain.find(this->filename) != this->brain.end())
+	if(this->session.find(this->filename) != this->session.end())
 	{
-		std::advance(this->contentIt, this->brain[this->filename].contentIndex);
-		this->currentIndex = this->brain[this->filename].currentIndex;
-		this->savedIndex = this->brain[this->filename].savedIndex;
-		this->entryLine = this->brain[this->filename].entryLine;
-		this->showLineNumbers = this->brain[this->filename].showLineNumbers;
+		std::advance(this->contentIt, this->session[this->filename].contentIndex);
+		this->currentIndex = this->session[this->filename].currentIndex;
+		this->savedIndex = this->session[this->filename].savedIndex;
+		this->entryLine = this->session[this->filename].entryLine;
+		this->showLineNumbers = this->session[this->filename].showLineNumbers;
 	}
 
 	this->menu.display(std::to_string(this->content.size()-1) + " " + LOAD);
@@ -258,19 +270,9 @@ void Cedit::event_load(const char* filename)
 void Cedit::event_open()
 {
 	if(!this->menu.type(FILE_OPEN)) {
+		this->refreshDisplay = false;
 		return;
 	}
-
-	this->brain[this->filename] = {
-		this->content,
-		std::distance(this->content.begin(), this->contentIt),
-		this->currentIndex,
-		this->savedIndex,
-		this->entryLine,
-		this->showLineNumbers
-	};
-
-	this->reset();
 
 	this->refreshHeader = true;
 
@@ -596,6 +598,7 @@ void Cedit::event_toggle_linenumbers()
 void Cedit::event_goto()
 {
 	if(!this->menu.type("Springe zu [Zeile Spalte]: ")) {
+		this->refreshDisplay = false;
 		return;
 	}
 
@@ -629,6 +632,19 @@ void Cedit::display()
 {
 	this->display_header();
 	this->display_content();
+
+	wbkgd(this->menu.window, A_REVERSE);
+	wmove(this->menu.window, 0, 0);
+
+	for(auto it = this->session.begin(); it != session.end(); it++) {
+		std::string end = this->filename == it->first ? "* " : "  ";
+
+		std::string sessionItem = "[" + std::to_string(std::distance(this->session.begin(), it)) + "]" + it->first + end;
+
+		wprintw(this->menu.window, sessionItem.c_str());
+	}
+
+	wrefresh(this->menu.window);
 }
 
 void Cedit::display_header()
@@ -659,6 +675,11 @@ void Cedit::display_current_line()
 
 	this->cursorY = distance(this->displayFirstIt(), this->contentIt);
 
+	wmove(this->wcontent, this->cursorY, 0);
+
+	this->display_linenumbers(this->contentIt);
+
+	getyx(this->wcontent, this->cursorY, this->cursorXReset);
 	wmove(this->wcontent, this->cursorY, this->cursorXReset);
 
 	for(std::size_t i = 0; i < this->contentIt->length(); i++)
@@ -695,6 +716,23 @@ void Cedit::display_current_line()
 	wmove(this->wcontent, this->cursorY, this->cursorX);
 }
 
+void Cedit::display_linenumbers(std::list<std::string>::iterator it)
+{
+	if(this->showLineNumbers)
+	{
+		const auto itBegin = this->displayFirstIt();
+
+		std::stringstream ss;
+		ss <<  " " << std::setw(3) << std::distance(itBegin, it) + this->entryLine + 1;
+
+		wattron(this->wcontent, A_REVERSE);
+		wprintw(this->wcontent, ss.str().c_str());
+		wattroff(this->wcontent, A_REVERSE);
+
+		wprintw(this->wcontent, " ");
+	}
+}
+
 void Cedit::display_content()
 {
 	wclear(this->wcontent);
@@ -705,37 +743,13 @@ void Cedit::display_content()
 	for(auto it = itBegin; it != itEnd; it++)
 	{
 		// Zeilenangabe ausgeben, wenn aktiviert strg+l
-		if(this->showLineNumbers)
-		{
-			std::stringstream ss;
-			ss <<  " " << std::setw(3) << distance(itBegin, it) + entryLine + 1;
-
-			wattron(this->wcontent, A_REVERSE);
-			wprintw(this->wcontent, ss.str().c_str());
-			wattroff(this->wcontent, A_REVERSE);
-
-			wprintw(this->wcontent, " ");
-		}
+		this->display_linenumbers(it);
 
 		if(this->contentIt == it)
 		{
 			getyx(this->wcontent, this->cursorY, this->cursorXReset);
-
-			for(std::size_t i = 0; i < it->length(); i++)
-			{
-				if(i == this->currentIndex)
-				{
-					getyx(this->wcontent, this->cursorY, this->cursorX);
-					wprintw(this->wcontent, "%c", it->at(i));
-					continue;
-				}
-
-				wprintw(this->wcontent, "%c", it->at(i));
-			}
-
-			// next print will override entire line this is important for syntax highlighting
+			this->display_current_line();
 			wmove(this->wcontent, this->cursorY, this->cursorXReset);
-			wclrtoeol(this->wcontent);
 		}
 
 		// last line to print to screen

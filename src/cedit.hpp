@@ -23,7 +23,7 @@
 
 namespace cedit {
 
-struct BrainData
+struct SessionData
 {
 	std::list<std::string> content;
 	long int contentIndex;
@@ -40,7 +40,7 @@ public:
 	std::list<std::string> content;
 	std::list<std::string>::iterator contentIt;
 
-	std::map<std::string, BrainData> brain;
+	std::map<std::string, SessionData> session;
 
 	std::size_t currentIndex;
 	std::size_t savedIndex;
@@ -121,6 +121,8 @@ public:
 	void display_header();
 
 	void display_current_line();
+
+	void display_linenumbers(std::list<std::string>::iterator it);
 
 	void display_content();
 
