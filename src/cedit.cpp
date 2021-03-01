@@ -288,24 +288,23 @@ void Cedit::event_write()
 		this->contentIt->insert(this->currentIndex, 1, (char)key);
 	}
 
-	// Entertaste
+	// Return key
 	if(this->key == 10)
 	{
 		if(this->currentIndex < this->contentIt->length()-1)
 		{
-			// Neue Zeile mit Inhalt nach dem Cursour in neue Zeile einfügen
+			// Insert new line with content after cursor in new line
 			this->content.insert(std::next(this->contentIt), this->contentIt->substr(this->currentIndex+1));
 
-			// Kürzen der Aktuellen Zeile bis vor dem Cursour
+			// Shorten the current line until the cursor
 			*this->contentIt = this->contentIt->substr(0, this->currentIndex+1);
 		}
 		else
 		{
-			//Neue leere Zeile hinter aktueller Zeile einfügen
+			// Insert new line empty after current line
 			this->content.insert(std::next(this->contentIt), "");
 		}
 
-		//In die neu erstellte Zeile Springen
 		this->contentIt = std::next(this->contentIt);
 
 		this->currentIndex = 0;
@@ -321,34 +320,33 @@ void Cedit::event_write()
 
 void Cedit::event_backspace()
 {
-	// Wenn am Anfang der Zeile und aktuelle Zeile ist nicht die Erste Zeile
+	// If at beginning of line and current line is not the first line
 	if(this->currentIndex == 0 && this->contentIt != this->content.begin())
 	{
 		this->scrollup();
 
-		// check ob die Zeile die gelöscht werden soll Inhalt enthält
+		// When the line has no content with exception of "\n"
 		if(std::prev(this->contentIt)->length() != 1)
 		{
-			// Springe in die vorherige Zeile
 			this->contentIt = std::prev(this->contentIt);
 
 			this->currentIndex = this->contentIt->length()-1;
 			this->savedIndex = this->contentIt->length()-1;
 
 			if(this->contentIt->length() > 0) {
-				// Füge die gesammte Zeile an die vorherige Zeile an
+				// Append the complete line to the previous line
 				this->contentIt->append(std::next(this->contentIt)->substr(0));
 
-				// Den ersten Absatz aus der aktuellen Zeile entfernen
+				// Delete the first line break in the current line
 				this->contentIt->erase(this->contentIt->find("\n"), 1);
 			}
 
-			// Lösche die Zeile von wo aus kopiert wurde aus der Liste
+			// Delete the line from where the list was copied from
 			this->content.erase(std::next(this->contentIt));
 		}
 		else if(std::prev(this->contentIt)->length() == 1)
 		{
-			// Lösche die vorherige Zeile mit "\n", so dass die aktuelle Zeile nach oben verschoben wird
+			// Delete the previous line with the "\n". The line will be poped one row up
 			this->content.erase(std::prev(this->contentIt));
 
 			this->currentIndex = 0;
@@ -357,7 +355,7 @@ void Cedit::event_backspace()
 	}
 	else if(!(this->currentIndex == 0 && this->contentIt == this->content.begin()))
 	{
-		// Buchstaben löschen der sich vor dem Cursor befindet
+		// Deletes the character that is in front of the cursor
 		this->contentIt->erase(this->currentIndex-1, 1);
 
 		this->currentIndex--;
@@ -368,36 +366,35 @@ void Cedit::event_backspace()
 
 void Cedit::event_delete()
 {
-	// letztes zeichen und letzte zeile
+	// Last character and last row
 	if(this->currentIndex == this->contentIt->length() && this->content.end() == std::next(this->contentIt))
 	{
 		return;
 	}
-	// zeilen ende: copy next line to this line, delete next line
+	// Line end: copy next line to this line, delete next line
 	else if(this->currentIndex == this->contentIt->length()-1 && this->contentIt->back() == '\n')
 	{
-		// Ueberprüfe ob die Zeile die geloescht werden soll Inhalt enthält
-		// bzw die zeile die kopiert werden soll
+		// If the line has more content then "\n" 
 		if(std::next(this->contentIt)->length() != 1)
 		{
-			// entferne den Absatz
+			// Remove the paragraph
 			this->contentIt->erase(this->currentIndex, 1);
 
-			// Fuege die gesammte naechte Zeile an die aktuelle Zeile an
+			// Copy the entire next line to the current line
 			this->contentIt->append(std::next(this->contentIt)->substr(0));
 
-			// Loesche die neachte zeile, von wo aus kopiert wurde
+			// Delete the line from where the list was copied from
 			this->content.erase(std::next(this->contentIt));
 		}
 		else if(std::next(this->contentIt)->length() == 1)
 		{
-			// Lösche die neachste Zeile
+			// Delete the next line
 			this->content.erase(std::next(this->contentIt));
 		}
 	}
 	else
 	{
-		// delete character
+		// Delete character
 		this->contentIt->erase(this->currentIndex, 1);
 		this->refreshDisplay = false;
 	}
@@ -537,7 +534,7 @@ void Cedit::event_pagedown()
 	{
 		this->entryLine += this->height;
 
-		// compares long int with size_t aka unsigned long int, type cast is required
+		// Compares long int with size_t aka unsigned long int, type cast is required
 		if(std::distance(this->contentIt, this->content.end()) > (long int)this->height)
 		{
 			this->contentIt = std::next(this->contentIt, this->height);
@@ -785,7 +782,6 @@ void Cedit::display_content()
 
 	for(auto it = itBegin; it != itEnd; it++)
 	{
-		// Zeilenangabe ausgeben, wenn aktiviert strg+l
 		this->display_linenumbers(it);
 
 		if(this->contentIt == it)
@@ -795,7 +791,7 @@ void Cedit::display_content()
 			wmove(this->wcontent, this->cursorY, this->cursorXReset);
 		}
 
-		// last line to print to screen
+		// Last line to print to screen
 		if(it != std::prev(this->content.end()) && it == std::prev(itEnd) && it->at(it->length() - 1) == '\n')
 		{
 			this->display_syntax_content(it->substr(0, it->length() - 1));
@@ -841,10 +837,10 @@ void Cedit::display_syntax_content(std::string line)
 				std::string temp;
 				getline(f, temp);
 
-				// found color syntax
+				// Found color syntax
 				if(temp.find("color") == 0)
 				{
-					// prepare rule
+					// Prepare rule
 					std::size_t first = temp.find("\"") + 1;
 					std::size_t last = temp.rfind("\"");
 
@@ -853,7 +849,7 @@ void Cedit::display_syntax_content(std::string line)
 					rule = std::regex_replace(rule, std::regex("<"), "b");
 					rule = std::regex_replace(rule, std::regex(">"), "b");
 
-					// prepare color
+					// Prepare color
 					std::size_t color_first = 6;
 					std::size_t color_last  = temp.find(" ", color_first + 1);
 
