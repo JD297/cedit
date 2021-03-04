@@ -21,6 +21,40 @@ Cedit::Cedit():
 
 	keypad(this->wcontent, true);
 	scrollok(this->wcontent, true);
+
+	this->load_config();
+}
+
+void Cedit::load_config()
+{
+	std::string config_filename = std::string(getenv("HOME")) + "/.ceditrc";
+
+	const auto fs_status = std::filesystem::status(config_filename);
+
+	if(!std::filesystem::exists(fs_status))
+	{
+		return;
+	}
+
+	std::ifstream f(config_filename, std::ios::in);
+
+	if(!f.good())
+	{
+		return;
+	}
+
+	while(!f.eof())
+	{
+		std::string line;
+		getline(f, line);
+
+		if(line == "showlinenumbers")
+		{
+			this->showLineNumbers = true;
+		}
+	}
+
+	f.close();
 }
 
 void Cedit::reset()

@@ -72,6 +72,8 @@ public:
 
 	Cedit();
 
+	void load_config();
+
 	void reset();
 
 	void run();
