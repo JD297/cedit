@@ -754,7 +754,6 @@ void Cedit::display_current_line()
 	this->display_linenumbers(this->contentIt);
 
 	getyx(this->wcontent, this->cursorY, this->cursorXReset);
-	wmove(this->wcontent, this->cursorY, this->cursorXReset);
 
 	for(std::size_t i = 0; i < this->contentIt->length(); i++)
 	{
@@ -768,7 +767,7 @@ void Cedit::display_current_line()
 		wprintw(this->wcontent, "%c", this->contentIt->at(i));
 	}
 
-	if(this->contentIt->length() == 0)
+	if(this->contentIt->length() == 0 && !this->showLineNumbers)
 	{
 		this->cursorX = 0;
 	}
@@ -835,7 +834,7 @@ void Cedit::display_content()
 			this->display_syntax_content(*it);
 		}
 
-		if(this->contentIt->length() == 0)
+		if(this->contentIt->length() == 0 && !this->showLineNumbers)
 		{
 			this->cursorX = 0;
 		}
