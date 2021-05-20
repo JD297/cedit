@@ -20,15 +20,17 @@
     pkg install gcc ncurses libncurses-dev
 
 ## Make commands
-#### build
-    make
-    
-    gmake on OpenBSD
-#### clean build
-    make clean
+``` bash
+Build binaray
+$ make
+$ gmake # OpenBSD
 
-#### install build
-    make install
+Clean build
+$ make clean
 
-#### uninstall build
-    make uninstall
+Install to /usr/local/bin/cedit
+# make install
+
+Uninstall cedit
+# make uninstall
+```
