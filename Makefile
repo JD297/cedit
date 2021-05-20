@@ -21,7 +21,7 @@ clean:
 	rm -f $(OBJ)/*.o $(TARGET)
 
 install: $(TARGET)
-	cp $(TARGET) /usr/bin
+	cp $(TARGET) /usr/local/bin
 
 uninstall:
-	rm -f /usr/$(TARGET)
+	rm -f /usr/local/bin/cedit
