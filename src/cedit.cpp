@@ -21,40 +21,6 @@ Cedit::Cedit():
 
 	keypad(this->wcontent, true);
 	scrollok(this->wcontent, true);
-
-	this->load_config();
-}
-
-void Cedit::load_config()
-{
-	std::string config_filename = std::string(getenv("HOME")) + "/.ceditrc";
-
-	const auto fs_status = std::filesystem::status(config_filename);
-
-	if(!std::filesystem::exists(fs_status))
-	{
-		return;
-	}
-
-	std::ifstream f(config_filename, std::ios::in);
-
-	if(!f.good())
-	{
-		return;
-	}
-
-	while(!f.eof())
-	{
-		std::string line;
-		getline(f, line);
-
-		if(line == "showlinenumbers")
-		{
-			this->showLineNumbers = true;
-		}
-	}
-
-	f.close();
 }
 
 void Cedit::reset()
@@ -740,7 +706,9 @@ void Cedit::display_header()
 
 void Cedit::display_current_line()
 {
-	bool isLastline = this->contentIt != std::prev(this->content.end()) && this->contentIt == std::prev(this->displayLastIt()) && this->contentIt->at(this->contentIt->length() - 1) == '\n';
+	bool isLastline =	this->contentIt != std::prev(this->content.end()) && 
+						this->contentIt == std::prev(this->displayLastIt()) && 
+						this->contentIt->at(this->contentIt->length() - 1) == '\n';
 
 	if(isLastline)
 	{
@@ -779,7 +747,7 @@ void Cedit::display_current_line()
 	wmove(this->wcontent, this->cursorY, this->cursorXReset);
 	wclrtoeol(this->wcontent);
 
-	this->display_syntax_content(*this->contentIt);
+	wprintw(this->wcontent, "%s", this->contentIt->c_str());
 
 	if(isLastline)
 	{
@@ -827,11 +795,11 @@ void Cedit::display_content()
 		// Last line to print to screen
 		if(it != std::prev(this->content.end()) && it == std::prev(itEnd) && it->at(it->length() - 1) == '\n')
 		{
-			this->display_syntax_content(it->substr(0, it->length() - 1));
+			wprintw(this->wcontent, "%s", it->substr(0, it->length() - 1).c_str());
 		}
 		else
 		{
-			this->display_syntax_content(*it);
+			wprintw(this->wcontent, "%s", it->c_str());
 		}
 
 		if(this->contentIt->length() == 0 && !this->showLineNumbers)
@@ -846,115 +814,10 @@ void Cedit::display_content()
 
 	for(size_t i = 0; i < this->height - distance(itBegin, itEnd); i++)
 	{
-		this->window_print_color(this->wcontent, COLOR_BLUE, "\n~");
-		// wprintw(this->wcontent, "\n~");
+		wprintw(this->wcontent, "\n~");
 	}
 
 	wmove(this->wcontent, this->cursorY, this->cursorX);
-}
-
-void Cedit::display_syntax_content(std::string line)
-{
-	std::list<Regex> rlist;
-
-	std::string syntax_filename = std::string(getenv("HOME")) + "/.cedit/c.ceditrc";
-
-	if(std::filesystem::exists(syntax_filename))
-	{
-		std::ifstream f(syntax_filename, std::ios::in);
-
-		if(f.good())
-		{
-			while(!f.eof())
-			{
-				std::string temp;
-				getline(f, temp);
-
-				// Found color syntax
-				if(temp.find("color") == 0)
-				{
-					// Prepare rule
-					std::size_t first = temp.find("\"") + 1;
-					std::size_t last = temp.rfind("\"");
-
-					std::string rule = temp.substr(first, last - first);
-
-					rule = std::regex_replace(rule, std::regex("<"), "b");
-					rule = std::regex_replace(rule, std::regex(">"), "b");
-
-					// Prepare color
-					std::size_t color_first = 6;
-					std::size_t color_last  = temp.find(" ", color_first + 1);
-
-					std::string color_string = temp.substr(color_first, color_last - color_first);
-
-					short color = 0;
-
-					if(color_string == "green")
-					{
-						color = COLOR_GREEN;
-					}
-					else if(color_string == "yellow")
-					{
-						color = COLOR_YELLOW;
-					}
-					else if(color_string == "magenta")
-					{
-						color = COLOR_MAGENTA;
-					}
-					else if(color_string == "cyan")
-					{
-						color = COLOR_CYAN;
-					}
-					else
-					{
-						color = COLOR_RED;
-					}
-
-					rlist.push_back(*(new Regex(rule, &line, color)));
-				}
-			}
-		}
-
-		f.close();
-	}
-
-	std::list<Syntax> slist;
-
-	for(auto rlit = rlist.begin(); rlit != rlist.end(); rlit++)
-	{
-		std::size_t rfrom = 0;
-
-		for(std::regex_iterator<std::string::iterator> end; rlit->it != end; rlit->it++)
-		{
-			rfrom = line.find(rlit->it->str(), rfrom);
-
-			slist.push_back(*(new Syntax(
-				rfrom,
-				rlit->it->str(),
-				rlit->color
-			)));
-
-			rfrom++;
-		}
-	}
-
-	slist.sort();
-
-	std::size_t from = 0, to = 0;
-
-	for(auto it = slist.begin(); it != slist.end(); it++)
-	{
-		to = line.find(it->text, from);
-
-		wprintw(this->wcontent, "%s", line.substr(from, to - from).c_str());
-
-		this->window_print_color(this->wcontent, it->color, it->text);
-
-		from = to + it->text.length();
-	}
-
-	wprintw(this->wcontent, "%s", line.substr(from).c_str());
 }
 
 void Cedit::window_print_color(WINDOW* window, short color, std::string line)

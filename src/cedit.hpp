@@ -4,7 +4,6 @@
 #include <ncurses.h>
 #include <fstream>
 #include <list>
-#include <map>
 #include <iterator>
 #include <algorithm>
 #include <string>
@@ -12,14 +11,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <bits/stdc++.h>
-#include <regex>
 #include <filesystem>
-#include <stdlib.h>
 
 #include "version.hpp"
 #include "menu.hpp"
-#include "regex.hpp"
-#include "syntax.hpp"
 
 namespace cedit {
 
@@ -71,8 +66,6 @@ public:
 	std::size_t rheight = getmaxy(stdscr);
 
 	Cedit();
-
-	void load_config();
 
 	void reset();
 
@@ -129,8 +122,6 @@ public:
 	void display_linenumbers(std::list<std::string>::iterator it);
 
 	void display_content();
-
-	void display_syntax_content(std::string line);
 
 	void window_print_color(WINDOW* window, short color, std::string line);
 
