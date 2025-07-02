@@ -1,3 +1,2 @@
-bin/cedit
-obj/*.o
-src/*.swp
+build/*
+!build/.gitkeep
