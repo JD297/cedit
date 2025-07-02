@@ -1,27 +1,42 @@
-TARGET=bin/cedit
-SRC=src
-OBJ=obj
-SRC_FILES=$(wildcard $(SRC)/*.cpp)
-OBJ_FILES=$(patsubst $(SRC)/%.cpp,$(OBJ)/%.o,$(SRC_FILES))
+.POSIX
 
-CXX=g++
-# OpenBSD (uncomment)
-#CXX=eg++
+CC            = c++
+CFLAGS        = -std=c++17 -Wall -Wextra -Wpedantic -g
+LDFLAGS       = -lncurses -lstdc++fs
 
-CXXFLAGS=-std=c++17 -O3 -Wall -Wextra -Wpedantic
-CXXLIBS=-lncurses -lstdc++fs
+TARGET        = cedit
+PREFIX        = /usr/local
+BINDIR        = $(PREFIX)/bin
+MANDIR        = $(PREFIX)/share/man
+SRCDIR        = src
+BUILDDIR      = build
 
-$(TARGET): $(OBJ_FILES)
-	$(CXX) $(CXXFLAGS) $(OBJ_FILES) $(CXXLIBS) -o $(TARGET)
+OBJFILES      = $(BUILDIR)/cedit.o $(BUILDIR)/main.o \
+                $(BUILDIR)/menu.o $(BUILDIR)/window.o
 
-$(OBJ)/%.o: $(SRC)/%.cpp
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+HEADERS       = $(SRCDIR)/src/cedit.hpp $(SRCDIR)/src/menu.hpp \
+                $(SRCDIR)/src/version.hpp $(SRCDIR)/src/window.hpp
+
+$(BUILDDIR)/$(TARGET): $(OBJFILES)
+	$(CC) -o $@ $(LDFLAGS) $(OBJFILES)
+
+$(BUILDIR)/main.o: $(HEADERS) $(SRCDIR)/main.cpp
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/main.cpp
+
+$(BUILDIR)/cedit.o: $(HEADERS) $(SRCDIR)/cedit.cpp
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/cedit.cpp
+
+$(BUILDIR)/menu.o: $(HEADERS) $(SRCDIR)/menu.cpp
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/menu.cpp
+
+$(BUILDIR)/window.o: $(HEADERS) $(SRCDIR)/window.cpp
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/window.cpp
 
 clean:
-	rm -f $(OBJ)/*.o $(TARGET)
+	rm -f $(BUILDDIR)/*
 
-install: $(TARGET)
-	cp $(TARGET) /usr/local/bin
+install: $(BUILDDIR)/$(TARGET)
+	cp $(BUILDDIR)/$(TARGET) $(BIN)/$(TARGET)
 
 uninstall:
-	rm -f /usr/local/bin/cedit
+	rm -f $(BINDIR)/$(TARGET)

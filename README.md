@@ -1,36 +1,21 @@
-# cedit
-
-![Language](https://img.shields.io/badge/Language-C++-blue.svg?style=flat&logo=c%2B%2B)
-![Version](https://img.shields.io/github/v/release/jd297/cedit.svg)
-[![License](https://img.shields.io/github/license/jd297/cedit.svg)](https://github.com/JD297/cedit/blob/master/LICENSE.md)
-![Lastcommit](https://img.shields.io/github/last-commit/jd297/cedit.svg)
-![Total lines](https://img.shields.io/tokei/lines/github/jd297/cedit)
-[![GitHub closed issues](https://img.shields.io/github/issues-closed/jd297/cedit.svg)](https://github.com/JD297/cedit/issues)
-    
 <img src="https://raw.githubusercontent.com/JD297/cedit/master/img/cedit_logo.gif" align="center" height="100" >
+
+curses-based text-editor
 
 ## Overview
 ![cedit overview](https://raw.githubusercontent.com/JD297/cedit/master/img/cedit_overview.png)
 
 ## Requirements
-#### Linux Ubuntu
-    sudo apt update && sudo apt install build-essential make libncurses5-dev
 
-#### FreeBSD
-    pkg install gcc ncurses libncurses-dev
+- libcurses / libncurses
 
-## Make commands
+## Makefile
+
+Basic Makefile recipes
+
 ``` bash
-Build binaray
 $ make
-$ gmake # OpenBSD
-
-Clean build
 $ make clean
-
-Install to /usr/local/bin/cedit
-# make install
-
-Uninstall cedit
-# make uninstall
+$ make PREFIX=/usr/local install
+$ make PREFIX=/usr/local uninstall
 ```
