@@ -2,7 +2,7 @@
 
 CC            = c++
 CFLAGS        = -std=c++17 -Wall -Wextra -Wpedantic -g
-LDFLAGS       = -lcurses -lstdc++fs
+LDFLAGS       = -lcurses
 
 TARGET        = cedit
 PREFIX        = /usr/local

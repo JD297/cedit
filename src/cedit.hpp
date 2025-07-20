@@ -10,8 +10,7 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <bits/stdc++.h>
-#include <filesystem>
+#include <map>
 
 #include "version.hpp"
 #include "menu.hpp"

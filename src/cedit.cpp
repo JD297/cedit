@@ -1,5 +1,7 @@
 #include "cedit.hpp"
 
+#include <sys/stat.h>
+
 namespace cedit {
 
 Cedit::Cedit():
@@ -166,54 +168,60 @@ void Cedit::event_load(const char* filename)
 	std::string message = "";
 	std::string message_filename = "\"" + std::string(filename) + "\"";
 
-	const auto fs_status = std::filesystem::status(filename);
+	struct stat sb;
 
-	if(!std::filesystem::exists(fs_status))
-	{
-		this->filename = std::string(filename);
-		this->refreshHeader = true;
+	if (stat(filename, &sb) == -1) {
+		if (errno == ENOENT) {
+			this->filename = std::string(filename);
+			this->refreshHeader = true;
 
-		this->menu.display(NEW_FILE);
+			this->menu.display(NEW_FILE);
+
+			return;
+		}
+
+		this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno), COLOR_RED);
 
 		return;
 	}
-	else if(std::filesystem::is_directory(fs_status)) {
+	
+	if (S_ISDIR(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_DIRECTORY, COLOR_RED);
 
 		return;
 	}
-	else if(std::filesystem::is_block_file(fs_status))
-	{
+
+	if (S_ISBLK(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_BLOCK_FILE, COLOR_YELLOW);
 
 		return;
 	}
-	else if(std::filesystem::is_character_file(fs_status))
-	{
+
+	if (S_ISCHR(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_CHARACTER_FILE, COLOR_YELLOW);
 
 		return;
 	}
-	else if(std::filesystem::is_fifo(fs_status))
-	{
+
+	if (S_ISFIFO(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_FIFO, COLOR_YELLOW);
 
 		return;
 	}
-	else if(std::filesystem::is_socket(fs_status))
-	{
+
+	if(S_ISSOCK(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_SOCKET, COLOR_YELLOW);
 
 		return;
 	}
-	else if(std::filesystem::is_symlink(fs_status))
-	{
+
+	if (S_ISLNK(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_SYMLINK, COLOR_YELLOW);
 
 		return;
 	}
-	else if(!std::filesystem::is_regular_file(fs_status))
-	{
+
+	if (S_ISREG(sb.st_mode) == 0) {
 		this->menu.display(message_filename + IS_NOT_REGULAR_FILE, COLOR_YELLOW);
 
 		return;
