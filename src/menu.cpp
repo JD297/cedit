@@ -12,7 +12,7 @@ void Menu::display(std::string message, short color) {
 	wattron(this->window, COLOR_PAIR(color));
 	wattron(this->window, A_REVERSE);
 
-	mvwprintw(this->window, 0, (size_t)(getmaxx(stdscr) / 2 - message.length() / 2), message.c_str());
+	mvwprintw(this->window, 0, (size_t)(getmaxx(stdscr) / 2 - message.length() / 2), "%s", message.c_str());
 
 	wattroff(this->window, A_REVERSE);
 	wattroff(this->window, COLOR_PAIR(color));
@@ -24,7 +24,7 @@ void Menu::display_type(const char* text) {
     wbkgd(this->window, A_REVERSE);
 
     wclear(this->window);
-    wprintw(this->window, text);
+    wprintw(this->window, "%s", text);
 
     mvwprintw(this->window, 0, std::strlen(text), "%s", this->content.c_str());
 

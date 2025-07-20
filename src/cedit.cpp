@@ -681,7 +681,7 @@ void Cedit::display()
 
 		std::string sessionItem = "[" + std::to_string(std::distance(this->session.begin(), it)) + "]" + it->first + end;
 
-		wprintw(this->menu.window, sessionItem.c_str());
+		wprintw(this->menu.window, "%s", sessionItem.c_str());
 	}
 
 	wrefresh(this->menu.window);
@@ -696,7 +696,7 @@ void Cedit::display_header()
 		wclear(this->wheader);
 		wbkgd(this->wheader, A_REVERSE);
 		mvwprintw(this->wheader, 0, 2, VERSION);
-		mvwprintw(this->wheader, 0, this->width / 2 - filename.size() / 2, filename.c_str());
+		mvwprintw(this->wheader, 0, this->width / 2 - filename.size() / 2, "%s", filename.c_str());
 
 		wrefresh(this->wheader);
 
@@ -767,7 +767,7 @@ void Cedit::display_linenumbers(std::list<std::string>::iterator it)
 		ss <<  " " << std::setw(3) << std::distance(itBegin, it) + this->entryLine + 1;
 
 		wattron(this->wcontent, A_REVERSE);
-		wprintw(this->wcontent, ss.str().c_str());
+		wprintw(this->wcontent, "%s", ss.str().c_str());
 		wattroff(this->wcontent, A_REVERSE);
 
 		wprintw(this->wcontent, " ");
