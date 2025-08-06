@@ -102,6 +102,9 @@ void Cedit::run()
 			case KEY_CTRL('x'):
 				this->event_cut();
 			break;
+			case KEY_CTRL('v'):
+				this->event_paste();
+			break;
 			default:
 				this->event_write();
 			break;
@@ -683,6 +686,13 @@ void Cedit::event_cut()
 {
 	auto it = this->contentIt;
 
+	this->paste_buffer.clear();
+
+	if (it->length() != 0) {
+		*it = it->substr(0, it->length() - 1); // \n
+		this->paste_buffer.push_back(*it);
+	}
+
 	if (it == std::prev(this->content.end()))
 	{
 		if (it == this->content.begin())
@@ -698,6 +708,12 @@ void Cedit::event_cut()
 	this->content.erase(it);
 
 	this->refreshDisplay = true;
+}
+
+void Cedit::event_paste()
+{
+	this->contentIt->insert(this->currentIndex, *this->paste_buffer.begin());
+	this->currentIndex += this->paste_buffer.begin()->length();
 }
 
 void Cedit::display()

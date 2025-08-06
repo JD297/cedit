@@ -36,6 +36,8 @@ public:
 	std::list<std::string> content;
 	std::list<std::string>::iterator contentIt;
 
+	std::list<std::string> paste_buffer;
+
 	std::map<std::string, SessionData> session;
 
 	std::size_t currentIndex;
@@ -115,6 +117,8 @@ public:
 	void event_change_tab();
 
 	void event_cut();
+
+	void event_paste();
 
 	void display();
 
