@@ -99,6 +99,9 @@ void Cedit::run()
 			case KEY_CTRL('t'):
 				this->event_change_tab();
 			break;
+			case KEY_CTRL('x'):
+				this->event_cut();
+			break;
 			default:
 				this->event_write();
 			break;
@@ -674,6 +677,27 @@ void Cedit::event_change_tab()
 	}
 
 	this->event_load(mapIt->first.c_str());
+}
+
+void Cedit::event_cut()
+{
+	auto it = this->contentIt;
+
+	if (it == std::prev(this->content.end()))
+	{
+		if (it == this->content.begin())
+		{
+			it->clear();
+		}
+
+		return;
+	}
+
+	this->event_down();
+
+	this->content.erase(it);
+
+	this->refreshDisplay = true;
 }
 
 void Cedit::display()

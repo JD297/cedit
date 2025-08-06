@@ -114,6 +114,8 @@ public:
 
 	void event_change_tab();
 
+	void event_cut();
+
 	void display();
 
 	void display_header();
