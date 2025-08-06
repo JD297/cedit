@@ -36,7 +36,7 @@ clean:
 	rm -f $(BUILDDIR)/*
 
 install: $(BUILDDIR)/$(TARGET)
-	cp $(BUILDDIR)/$(TARGET) $(BIN)/$(TARGET)
+	cp $(BUILDDIR)/$(TARGET) $(BINDIR)/$(TARGET)
 
 uninstall:
 	rm -f $(BINDIR)/$(TARGET)
