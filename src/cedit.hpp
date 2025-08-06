@@ -15,6 +15,8 @@
 #include "version.hpp"
 #include "menu.hpp"
 
+#define KEY_CTRL(x) ((x) & 0x1f)
+
 namespace cedit {
 
 struct SessionData

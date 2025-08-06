@@ -50,13 +50,13 @@ void Cedit::run()
 
 		switch(this->key)
 		{
-			case 19:
+			case KEY_CTRL('s'):
 				this->event_save();
 			break;
-			case 15:
+			case KEY_CTRL('o'):
 				this->event_open();
 			break;
-			case 27:
+			case KEY_CTRL('q'):
 				this->isrunning = false;
 				endwin();
 			break;
@@ -90,13 +90,13 @@ void Cedit::run()
 			case KEY_END:
 				this->event_end();
 			break;
-			case 12:
+			case KEY_CTRL('l'):
 				this->event_toggle_linenumbers();
 			break;
-			case 7:
+			case KEY_CTRL('g'):
 				this->event_goto();
 			break;
-			case 20:
+			case KEY_CTRL('t'):
 				this->event_change_tab();
 			break;
 			default:
