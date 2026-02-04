@@ -1,5 +1,6 @@
 #include "cedit.hpp"
 
+#include <iomanip>
 #include <sys/stat.h>
 
 namespace cedit {
@@ -190,7 +191,7 @@ void Cedit::event_load(const char* filename)
 
 		return;
 	}
-	
+
 	if (S_ISDIR(sb.st_mode) != 0) {
 		this->menu.display(message_filename + IS_DIRECTORY, COLOR_RED);
 
@@ -388,7 +389,7 @@ void Cedit::event_delete()
 	// Line end: copy next line to this line, delete next line
 	else if(this->currentIndex == this->contentIt->length()-1 && this->contentIt->back() == '\n')
 	{
-		// If the line has more content then "\n" 
+		// If the line has more content then "\n"
 		if(std::next(this->contentIt)->length() != 1)
 		{
 			// Remove the paragraph
@@ -754,8 +755,8 @@ void Cedit::display_header()
 
 void Cedit::display_current_line()
 {
-	bool isLastline =	this->contentIt != std::prev(this->content.end()) && 
-						this->contentIt == std::prev(this->displayLastIt()) && 
+	bool isLastline =	this->contentIt != std::prev(this->content.end()) &&
+						this->contentIt == std::prev(this->displayLastIt()) &&
 						this->contentIt->at(this->contentIt->length() - 1) == '\n';
 
 	if(isLastline)
