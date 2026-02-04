@@ -5,7 +5,7 @@ namespace cedit {
 Menu::Menu() : Window(getmaxx(stdscr), 1, 0, getmaxy(stdscr) - 1) {}
 
 void Menu::display(std::string message, short color) {
-	wclear(this->window);
+	werase(this->window);
 
 	message = "[ " + message + " ]";
 
@@ -23,7 +23,7 @@ void Menu::display(std::string message, short color) {
 void Menu::display_type(const char* text) {
     wbkgd(this->window, A_REVERSE);
 
-    wclear(this->window);
+    werase(this->window);
     wprintw(this->window, "%s", text);
 
     mvwprintw(this->window, 0, std::strlen(text), "%s", this->content.c_str());

@@ -11,7 +11,7 @@ Window::Window(size_t sizeX, std::size_t sizeY, std::size_t posX, std::size_t po
 }
 
 void Window::window_clear_refresh() {
-    wclear(this->window);
+    werase(this->window);
     wrefresh(this->window);
 }
 

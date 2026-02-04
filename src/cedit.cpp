@@ -40,10 +40,14 @@ void Cedit::run()
 {
 	while(this->isrunning)
 	{
+		curs_set(0);
+
 		if(this->refreshDisplay)
 			this->display();
 		else
 			this->display_current_line();
+
+		curs_set(1);
 
 		this->refreshDisplay = true;
 
@@ -742,7 +746,7 @@ void Cedit::display_header()
 
 	if(this->refreshHeader)
 	{
-		wclear(this->wheader);
+		werase(this->wheader);
 		wbkgd(this->wheader, A_REVERSE);
 		mvwprintw(this->wheader, 0, 2, VERSION);
 		mvwprintw(this->wheader, 0, this->width / 2 - filename.size() / 2, "%s", filename.c_str());
@@ -825,7 +829,7 @@ void Cedit::display_linenumbers(std::list<std::string>::iterator it)
 
 void Cedit::display_content()
 {
-	wclear(this->wcontent);
+	werase(this->wcontent);
 
 	const auto itBegin = this->displayFirstIt();
 	const auto itEnd = this->displayLastIt();
