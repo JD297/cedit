@@ -732,11 +732,6 @@ void Cedit::display_content()
 		}
 	}
 
-	for(size_t i = 0; i < this->height - distance(itBegin, itEnd); i++)
-	{
-		wprintw(this->wcontent, "\n~");
-	}
-
 	wmove(this->wcontent, this->cursorY, this->cursorX);
 }
 
