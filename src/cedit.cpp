@@ -116,6 +116,8 @@ void Cedit::run()
 
 void Cedit::event_save()
 {
+	FILE *f;
+
 	if(this->filename.empty())
 	{
 		if(!this->menu.type(FILE_SAVE)) {
@@ -127,32 +129,33 @@ void Cedit::event_save()
 		this->refreshHeader = true;
 	}
 
-	std::ofstream f(this->filename.c_str());
+	if ((f = fopen(this->filename.c_str(), "w")) == NULL) {
+		this->menu.display(std::string(FAIL_WRITE) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
 
-	auto itEnd = std::prev(this->content.end());
+		return;
+	}
 
-	if(!itEnd->empty())
+	auto it_end = std::prev(this->content.end());
+
+	if(!it_end->empty())
 	{
-		itEnd->append("\n");
+		it_end->append("\n");
+
 		this->content.emplace_back("");
 	}
 
 	for(auto it = this->content.begin(); it != this->content.end(); it++)
 	{
-		f << *it;
-	}
+		(void)fwrite(it->c_str(), it->length(), sizeof(char), f);
 
-	f.close();
-
-	if(!f)
-	{
-		if(errno)
-		{
-			this->menu.display(std::string(FAIL_WRITE) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno), COLOR_RED);
+		if (ferror(f)) {
+			this->menu.display(std::string(FAIL_WRITE) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
+			
+			break;
 		}
-
-		return;
 	}
+
+	fclose(f);
 
 	this->menu.display(std::to_string(content.size()-1) + " " + SAVE);
 }
@@ -223,7 +226,7 @@ void Cedit::event_load(const char* filename)
 
 	this->contentIt = this->content.begin();
 
-	this->menu.display(std::to_string(this->content.size()) + " " + LOAD);
+	this->menu.display(std::to_string(this->content.size() - 1) + " " + LOAD);
 }
 
 void Cedit::event_open()
