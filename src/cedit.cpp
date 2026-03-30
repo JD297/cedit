@@ -10,7 +10,6 @@ Cedit::Cedit():
 	savedIndex(0),
 	entryLine(0),
 	key(0),
-	refreshDisplay(true),
 	refreshHeader(true),
 	isrunning(true),
 	filename(""),
@@ -42,14 +41,9 @@ void Cedit::run()
 	{
 		curs_set(0);
 
-		if(this->refreshDisplay)
-			this->display();
-		else
-			this->display_current_line();
+		this->display();
 
 		curs_set(1);
-
-		this->refreshDisplay = true;
 
 		this->key = wgetch(this->wcontent);
 
@@ -232,7 +226,6 @@ void Cedit::event_load(const char* filename)
 void Cedit::event_open()
 {
 	if(!this->menu.type(FILE_OPEN)) {
-		this->refreshDisplay = false;
 		return;
 	}
 
@@ -274,7 +267,6 @@ void Cedit::event_write()
 	{
 		this->currentIndex++;
 		this->savedIndex = this->currentIndex;
-		this->refreshDisplay = false;
 	}
 }
 
@@ -320,7 +312,6 @@ void Cedit::event_backspace()
 
 		this->currentIndex--;
 		this->savedIndex = this->currentIndex;
-		this->refreshDisplay = false;
 	}
 }
 
@@ -356,7 +347,6 @@ void Cedit::event_delete()
 	{
 		// Delete character
 		this->contentIt->erase(this->currentIndex, 1);
-		this->refreshDisplay = false;
 	}
 }
 
@@ -392,8 +382,6 @@ void Cedit::scrolldown()
 
 void Cedit::event_up()
 {
-	this->refreshDisplay = false;
-
 	if(this->contentIt != this->content.begin())
 	{
 		this->scrollup();
@@ -412,8 +400,6 @@ void Cedit::event_up()
 
 void Cedit::event_down()
 {
-	this->refreshDisplay = false;
-
 	if(this->contentIt == std::prev(this->content.end()))
 	{
 		return;
@@ -438,8 +424,6 @@ void Cedit::event_down()
 
 void Cedit::event_left()
 {
-	this->refreshDisplay = false;
-
 	if(this->currentIndex > 0)
 	{
 		this->currentIndex--;
@@ -457,8 +441,6 @@ void Cedit::event_left()
 
 void Cedit::event_right()
 {
-	this->refreshDisplay = false;
-
 	const auto itEnd = std::prev(this->content.end());
 
 	if(this->currentIndex < this->contentIt->length()-1 ||
@@ -470,7 +452,6 @@ void Cedit::event_right()
 			return;
 		}
 
-		this->refreshDisplay = false;
 		this->currentIndex++;
 		this->savedIndex = this->currentIndex;
 	}
@@ -530,7 +511,6 @@ void Cedit::event_pos1()
 {
 	this->currentIndex = 0;
 	this->savedIndex = 0;
-	this->refreshDisplay = false;
 }
 
 void Cedit::event_end()
@@ -545,8 +525,6 @@ void Cedit::event_end()
 		this->currentIndex = this->contentIt->length();
 		this->savedIndex = this->contentIt->length();
 	}
-
-	this->refreshDisplay = false;
 }
 
 void Cedit::event_toggle_linenumbers()
@@ -557,7 +535,6 @@ void Cedit::event_toggle_linenumbers()
 void Cedit::event_goto()
 {
 	if(!this->menu.type("Springe zu [Zeile Spalte]: ")) {
-		this->refreshDisplay = false;
 		return;
 	}
 
@@ -611,8 +588,6 @@ void Cedit::event_cut()
 	this->event_down();
 
 	this->content.erase(it);
-
-	this->refreshDisplay = true;
 }
 
 void Cedit::event_paste()

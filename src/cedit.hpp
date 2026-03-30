@@ -45,7 +45,6 @@ public:
 
 	int key;
 
-	bool refreshDisplay;
 	bool refreshHeader;
 	bool isrunning;
 
