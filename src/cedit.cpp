@@ -1,6 +1,6 @@
 #include "cedit.hpp"
 
-#include <iomanip>
+#include <stddef.h>
 #include <sys/stat.h>
 
 namespace cedit {
@@ -101,9 +101,6 @@ void Cedit::run()
 			case KEY_CTRL('g'):
 				this->event_goto();
 			break;
-			case KEY_CTRL('t'):
-				this->event_change_tab();
-			break;
 			case KEY_CTRL('x'):
 				this->event_cut();
 			break;
@@ -162,134 +159,71 @@ void Cedit::event_save()
 
 void Cedit::event_load(const char* filename)
 {
+	FILE *f;
+	struct stat sb;
+
 	if (filename == NULL) {
 		return;
 	}
 
-	if(!this->filename.empty())
-	{
-		this->session[this->filename] = {
-			this->content,
-			std::distance(this->content.begin(), this->contentIt),
-			this->currentIndex,
-			this->savedIndex,
-			this->entryLine,
-			this->showLineNumbers
-		};
-	}
+	this->filename = std::string(filename);
+	this->refreshHeader = true;
 
 	this->reset();
 
 	std::string message = "";
 	std::string message_filename = "\"" + std::string(filename) + "\"";
 
-	struct stat sb;
-
 	if (stat(filename, &sb) == -1) {
 		if (errno == ENOENT) {
-			this->filename = std::string(filename);
-			this->refreshHeader = true;
-
 			this->menu.display(NEW_FILE);
 
 			return;
 		}
 
-		this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno), COLOR_RED);
-
-		return;
-	}
-
-	if (S_ISDIR(sb.st_mode) != 0) {
-		this->menu.display(message_filename + IS_DIRECTORY, COLOR_RED);
-
-		return;
-	}
-
-	if (S_ISBLK(sb.st_mode) != 0) {
-		this->menu.display(message_filename + IS_BLOCK_FILE, COLOR_YELLOW);
-
-		return;
-	}
-
-	if (S_ISCHR(sb.st_mode) != 0) {
-		this->menu.display(message_filename + IS_CHARACTER_FILE, COLOR_YELLOW);
-
-		return;
-	}
-
-	if (S_ISFIFO(sb.st_mode) != 0) {
-		this->menu.display(message_filename + IS_FIFO, COLOR_YELLOW);
-
-		return;
-	}
-
-	if(S_ISSOCK(sb.st_mode) != 0) {
-		this->menu.display(message_filename + IS_SOCKET, COLOR_YELLOW);
-
-		return;
-	}
-
-	if (S_ISLNK(sb.st_mode) != 0) {
-		this->menu.display(message_filename + IS_SYMLINK, COLOR_YELLOW);
+		this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
 
 		return;
 	}
 
 	if (S_ISREG(sb.st_mode) == 0) {
-		this->menu.display(message_filename + IS_NOT_REGULAR_FILE, COLOR_YELLOW);
+		this->menu.display(message_filename + IS_NOT_REGULAR_FILE);
 
 		return;
 	}
 
-	std::ifstream f(std::string(filename), std::ios::in);
-
-	if(!f.good())
-	{
-		if(errno)
-		{
-			this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno), COLOR_RED);
-		}
-		else
-		{
-			this->menu.display(NEW_FILE);
-		}
-
-		this->filename = "";
+	if ((f = fopen(filename, "r")) == NULL) {
+		this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
 
 		return;
 	}
-
-	this->filename = std::string(filename);
-
-	this->refreshHeader = true;
 
 	this->content.clear();
 
-	while(!f.eof())
-	{
-		std::string line;
-		getline(f, line);
+	char *line = NULL;
+	size_t linesz = 0;
 
-		this->content.emplace_back(line+"\n");
+	while (getline(&line, &linesz, f) != -1) {
+		this->content.emplace_back(std::string(line));
+
+		line = NULL;
 	}
 
-	f.close();
+	if (ferror(f)) {
+		this->content.clear();
 
-	this->content.rbegin()->clear();
+		this->menu.display(std::string(FAIL_READ) + std::string("\"") + std::string(filename) + "\": " + std::strerror(errno));
+
+		return;
+	}
+
+	fclose(f);
+
+	this->content.emplace_back("");
 
 	this->contentIt = this->content.begin();
 
-	if(this->session.find(this->filename) != this->session.end())
-	{
-		std::advance(this->contentIt, this->session[this->filename].contentIndex);
-		this->currentIndex = this->session[this->filename].currentIndex;
-		this->savedIndex = this->session[this->filename].savedIndex;
-		this->entryLine = this->session[this->filename].entryLine;
-		this->showLineNumbers = this->session[this->filename].showLineNumbers;
-	}
-
-	this->menu.display(std::to_string(this->content.size()-1) + " " + LOAD);
+	this->menu.display(std::to_string(this->content.size()) + " " + LOAD);
 }
 
 void Cedit::event_open()
@@ -650,47 +584,6 @@ void Cedit::event_goto()
 	}
 }
 
-void Cedit::event_change_tab()
-{
-	if(this->session.size() == 0)
-	{
-		return;
-	}
-
-	short int key = wgetch(this->menu.window);
-
-	auto mapIt = this->session.find(this->filename);
-
-	if(key == KEY_LEFT)
-	{
-		if(mapIt == this->session.begin())
-		{
-			mapIt = std::prev(this->session.end());
-		}
-		else
-		{
-			mapIt = std::prev(mapIt);
-		}
-	}
-	else if(key == KEY_RIGHT)
-	{
-		if(mapIt == this->session.end() || mapIt == std::prev(this->session.end()))
-		{
-			mapIt = this->session.begin();
-		}
-		else
-		{
-			mapIt = std::next(mapIt);
-		}
-	}
-	else
-	{
-		return;
-	}
-
-	this->event_load(mapIt->first.c_str());
-}
-
 void Cedit::event_cut()
 {
 	auto it = this->contentIt;
@@ -732,14 +625,6 @@ void Cedit::display()
 
 	wbkgd(this->menu.window, A_REVERSE);
 	wmove(this->menu.window, 0, 0);
-
-	for(auto it = this->session.begin(); it != session.end(); it++) {
-		std::string end = this->filename == it->first ? "* " : "  ";
-
-		std::string sessionItem = "[" + std::to_string(std::distance(this->session.begin(), it)) + "]" + it->first + end;
-
-		wprintw(this->menu.window, "%s", sessionItem.c_str());
-	}
 
 	wrefresh(this->menu.window);
 }

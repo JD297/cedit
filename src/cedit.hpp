@@ -1,16 +1,16 @@
 #ifndef CEDIT_HPP
 #define CEDIT_HPP
 
-#include <ncurses.h>
-#include <fstream>
+#include <curses.h>
+
 #include <list>
 #include <iterator>
 #include <algorithm>
 #include <string>
 #include <cstring>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <map>
+#include <stdio.h>
+#include <fstream>
+#include <stddef.h>
 
 #include "version.hpp"
 #include "menu.hpp"
@@ -37,8 +37,6 @@ public:
 	std::list<std::string>::iterator contentIt;
 
 	std::list<std::string> paste_buffer;
-
-	std::map<std::string, SessionData> session;
 
 	std::size_t currentIndex;
 	std::size_t savedIndex;
@@ -113,8 +111,6 @@ public:
 	void event_toggle_linenumbers();
 
 	void event_goto();
-
-	void event_change_tab();
 
 	void event_cut();
 
