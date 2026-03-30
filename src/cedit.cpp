@@ -162,6 +162,10 @@ void Cedit::event_save()
 
 void Cedit::event_load(const char* filename)
 {
+	if (filename == NULL) {
+		return;
+	}
+
 	if(!this->filename.empty())
 	{
 		this->session[this->filename] = {

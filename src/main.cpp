@@ -1,4 +1,6 @@
-#include <iostream>
+#include <curses.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "cedit.hpp"
 
@@ -9,51 +11,43 @@ void NCURSES_INIT()
 	cbreak();
 	raw();
 	keypad(stdscr, true);
-	set_escdelay(100);
 	set_tabsize(4);
 
-	short bg = 0;
-	short fg = 0;
-
-	use_default_colors();
 	start_color();
 
-	// get default colors
-	pair_content(0, &bg, &fg);
-
-	// set colors with default background
-	for(int i = 0; i < 8; i++)
-	{
-		init_pair(i, i, bg);
-	}
+	use_default_colors();
 }
 
-namespace cedit
+void usage(void)
 {
-	void arguments(const int argc, const char** argv, cedit::Cedit* cedit)
-	{
-		if(argc >= 3)
-		{
-			endwin();
-
-			std::cerr << "cedit: invalid argument -- \'" << argv[2] << "\'\n";
-			std::cerr << "usage: cedit [path/to/file]\n";
-
-			exit(1);
-		}
-		else if(argc == 2) {
-			cedit->event_load(argv[1]);
-		}
-	}
+	fprintf(stderr, "usage: cedit [file]\n");
 }
 
-int main(const int argc, const char** argv)
+int main(int argc, char** argv)
 {
+	int ch;
+
+	while ((ch = getopt(argc, argv, "")) != -1) {
+		switch (ch) {
+			default: {
+				usage();
+
+				exit(EXIT_FAILURE);
+			}
+		}
+	}
+
+	if (argc > optind + 1) {
+		usage();
+
+		exit(EXIT_FAILURE);
+	}
+
 	NCURSES_INIT();
 
 	cedit::Cedit editor;
 
-	cedit::arguments(argc, argv, &editor);
+	editor.event_load(argv[optind]);
 
 	editor.run();
 

@@ -1,7 +1,7 @@
 #ifndef VERSION_HPP
 #define VERSION_HPP
 
-#define VERSION "cedit 1.8.3"
+#define VERSION "cedit 2.0.0"
 
 #define NEW_FILE "New file"
 

@@ -1,7 +1,7 @@
 .POSIX:
 
 CC            = c++
-CFLAGS        = -std=c++17 -Wall -Wextra -Wpedantic -g
+CFLAGS        = -Wall -Wextra -Wpedantic -g -I src
 LDFLAGS       = -lcurses
 
 TARGET        = cedit
