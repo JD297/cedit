@@ -681,10 +681,12 @@ void Cedit::display_linenumbers(std::list<std::string>::iterator it)
 {
 	if(this->showLineNumbers)
 	{
+		size_t n = std::to_string(content.size()).length();
+	
 		const auto itBegin = this->displayFirstIt();
 
 		std::stringstream ss;
-		ss <<  " " << std::setw(3) << std::distance(itBegin, it) + this->entryLine + 1;
+		ss <<  std::setw(n <= 2 ? 2 : n) << std::distance(itBegin, it) + this->entryLine + 1;
 
 		wattron(this->wcontent, A_REVERSE);
 		wprintw(this->wcontent, "%s", ss.str().c_str());
