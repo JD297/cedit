@@ -17,7 +17,7 @@
 #define CEDIT_RDWR 0x1
 #define CEDIT_CREATE_RDWR 0x2
 
-int mode = 0;
+int mode = CEDIT_RDONLY;
 int nflag = 0;
 
 struct {
