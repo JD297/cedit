@@ -1,7 +1,7 @@
 .POSIX:
 
-CC            = c++
-CFLAGS        = -Wall -Wextra -Wpedantic -g -I src
+CC            = cc
+CFLAGS        = -std=c89 -Wall -Wextra -Wpedantic -g -I src
 LDFLAGS       = -lcurses
 
 TARGET        = cedit
@@ -11,26 +11,22 @@ MANDIR        = $(PREFIX)/share/man
 SRCDIR        = src
 BUILDDIR      = build
 
-OBJFILES      = $(BUILDDIR)/cedit.o $(BUILDDIR)/main.o \
-                $(BUILDDIR)/menu.o $(BUILDDIR)/window.o
+OBJFILES      = $(BUILDDIR)/cedit.o\
+                $(BUILDDIR)/string.o $(BUILDDIR)/list_string.o
 
-HEADERS       = $(SRCDIR)/cedit.hpp $(SRCDIR)/menu.hpp \
-                $(SRCDIR)/version.hpp $(SRCDIR)/window.hpp
+HEADERS       = $(SRCDIR)/jd297/string.h $(SRCDIR)/jd297/list_string.h
 
 $(BUILDDIR)/$(TARGET): $(OBJFILES)
 	$(CC) -o $@ $(OBJFILES) $(LDFLAGS)
 
-$(BUILDDIR)/main.o: $(HEADERS) $(SRCDIR)/main.cpp
-	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/main.cpp
+$(BUILDDIR)/cedit.o: $(HEADERS) $(SRCDIR)/cedit.c
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/cedit.c
 
-$(BUILDDIR)/cedit.o: $(HEADERS) $(SRCDIR)/cedit.cpp
-	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/cedit.cpp
+$(BUILDDIR)/string.o: $(HEADERS)
+	$(CC) $(CFLAGS) -c -o $@ -DJD297_STRING_IMPLEMENTATION -x c $(SRCDIR)/jd297/string.h
 
-$(BUILDDIR)/menu.o: $(HEADERS) $(SRCDIR)/menu.cpp
-	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/menu.cpp
-
-$(BUILDDIR)/window.o: $(HEADERS) $(SRCDIR)/window.cpp
-	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/window.cpp
+$(BUILDDIR)/list_string.o: $(HEADERS)
+	$(CC) $(CFLAGS) -c -o $@ -DJD297_LIST_IMPLEMENTATION -x c $(SRCDIR)/jd297/list_string.h
 
 clean:
 	rm -f $(BUILDDIR)/*
