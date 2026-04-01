@@ -223,10 +223,6 @@ void cedit_event_save(void)
 	}
 
 	if ((f = fopen(cedit_state.filename, fmode)) == NULL) {
-		wprintw(cedit_state.wcontent, "%s", strerror(errno));
-		
-		wgetch(cedit_state.wcontent);
-		return;
 		err(EXIT_FAILURE, "%s", cedit_state.filename);
 	}
 
