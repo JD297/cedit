@@ -13,11 +13,6 @@
 
 #define KEY_CTRL(x) ((x) & 0x1f)
 
-#define CEDIT_RDONLY 0x0
-#define CEDIT_RDWR 0x1
-#define CEDIT_CREATE_RDWR 0x2
-
-int mode = CEDIT_RDONLY;
 int nflag = 0;
 
 struct {
@@ -35,7 +30,13 @@ struct {
 	size_t sindex;
 	
 	int linenumbers;
-	
+
+	enum {
+		CEDIT_RDONLY,
+		CEDIT_RDWR,
+		CEDIT_CREATE_RDWR
+	} mode;
+
 	enum {
 		CEDIT_MENU_NORMAL,
 		CEDIT_MENU_SAVED,
@@ -56,6 +57,8 @@ static void cedit_state_init(const char *filename)
 	cedit_state.linenumbers = nflag;
 
 	cedit_state.mstate = CEDIT_MENU_NORMAL;
+
+	cedit_state.mode = CEDIT_RDONLY;
 }
 
 static void cedit_curses_exit(void)
@@ -88,7 +91,7 @@ static void cedit_curses_init(void)
 	idlok(cedit_state.wcontent, true);
 
 	#if defined(__OpenBSD__)
-	switch (mode) {
+	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
 			promises = "stdio tty rpath wpath cpath";
 			break;
@@ -121,7 +124,7 @@ void cedit_event_load(void)
 	assert(cedit_state.filename != NULL);
 
 	#if defined(__OpenBSD__)
-	switch (mode) {
+	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
 			promises = "stdio tty rpath wpath cpath";
 			permissions = "rwc";
@@ -198,7 +201,7 @@ void cedit_event_save(void)
 	FILE *f;
 	list_node_t *it;
 
-	switch (mode) {
+	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
 			fmode = "w+";
 			break;
@@ -338,7 +341,7 @@ void cedit_display_menu(void)
 	wprintw(cedit_state.wmenu, "Ln %zu, Col %zu",
 		list_distance(list_begin(&cedit_state.content), cedit_state.content_it) + 1, cedit_state.cindex + 1);
 
-	if (mode == CEDIT_RDONLY) {
+	if (cedit_state.mode == CEDIT_RDONLY) {
 		wprintw(cedit_state.wmenu, " ");
 				
 		wprintw(cedit_state.wmenu, "(**read-only mode**)");
@@ -670,7 +673,7 @@ int main(int argc, char** argv)
 	while ((ch = getopt(argc, argv, "cnrw")) != -1) {
 		switch (ch) {
 			case 'c':
-				mode = CEDIT_CREATE_RDWR;
+				cedit_state.mode = CEDIT_CREATE_RDWR;
 				break;
 			case 'n':
 				nflag = 1;
@@ -678,8 +681,8 @@ int main(int argc, char** argv)
 			case 'r':
 				break;
 			case 'w':
-				if (mode != CEDIT_CREATE_RDWR) {
-					mode = CEDIT_RDWR;
+				if (cedit_state.mode != CEDIT_CREATE_RDWR) {
+					cedit_state.mode = CEDIT_RDWR;
 				}
 				break;
 			default: {
@@ -691,7 +694,7 @@ int main(int argc, char** argv)
 	}
 
 	#if defined(__OpenBSD__)
-	switch (mode) {
+	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
 			promises = "stdio tty unveil rpath wpath cpath";
 			break;
