@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <curses.h>
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -57,8 +58,6 @@ static void cedit_state_init(const char *filename)
 	cedit_state.linenumbers = nflag;
 
 	cedit_state.mstate = CEDIT_MENU_NORMAL;
-
-	cedit_state.mode = CEDIT_RDONLY;
 }
 
 static void cedit_curses_exit(void)
@@ -153,6 +152,15 @@ void cedit_event_load(void)
 	#endif
 
 	if (stat(cedit_state.filename, &sb) == -1) {
+		if (errno == ENOENT && cedit_state.mode == CEDIT_CREATE_RDWR) {
+			list_insert(&cedit_state.content,
+				list_end(&cedit_state.content), str_from_cstr(""));
+
+			cedit_state.entry_it = cedit_state.content_it = list_begin(&cedit_state.content);
+
+			return;
+		}
+
 		err(EXIT_FAILURE, "%s", cedit_state.filename);
 	}
 
@@ -679,6 +687,7 @@ int main(int argc, char** argv)
 				nflag = 1;
 				break;
 			case 'r':
+				cedit_state.mode = CEDIT_RDONLY;
 				break;
 			case 'w':
 				if (cedit_state.mode != CEDIT_CREATE_RDWR) {
