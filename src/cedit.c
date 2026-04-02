@@ -660,6 +660,8 @@ void usage(void)
 
 int main(int argc, char** argv)
 {
+	extern int getopt(int argc, char * const *argv, const char *optstring);
+	extern int optind;
 	int ch;
 
 	#if defined(__OpenBSD__)
