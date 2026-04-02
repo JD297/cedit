@@ -246,6 +246,8 @@ list_node_t *cedit_get_page_end_it(void)
 	list_node_t *it;
 	int h, w;
 
+	(void)w;
+
 	getmaxyx(cedit_state.wcontent, h, w);
 	
 	for (it = cedit_state.entry_it; h > 0 && it != list_end(&cedit_state.content); --h) {
@@ -295,7 +297,7 @@ void cedit_display_content(void)
 	for (it = cedit_state.entry_it; it != page_end_it; it = list_next(it)) {
 		if (cedit_state.linenumbers) {
 			wattron(cedit_state.wcontent, A_REVERSE);
-			wprintw(cedit_state.wcontent, "%*zu", lwidth, lindex);
+			wprintw(cedit_state.wcontent, "%*lu", lwidth, lindex);
 			wattroff(cedit_state.wcontent, A_REVERSE);
 
 			wprintw(cedit_state.wcontent, " ");
@@ -340,11 +342,11 @@ void cedit_display_menu(void)
 	
 	wprintw(cedit_state.wmenu, "  ");
 
-	wprintw(cedit_state.wmenu, "(lines %zu)", list_size(&cedit_state.content) - 1);
+	wprintw(cedit_state.wmenu, "(lines %lu)", list_size(&cedit_state.content) - 1);
 
 	wprintw(cedit_state.wmenu, " ");
 	
-	wprintw(cedit_state.wmenu, "Ln %zu, Col %zu",
+	wprintw(cedit_state.wmenu, "Ln %lu, Col %lu",
 		list_distance(list_begin(&cedit_state.content), cedit_state.content_it) + 1, cedit_state.cindex + 1);
 
 	if (cedit_state.mode == CEDIT_RDONLY) {
@@ -490,6 +492,8 @@ void cedit_event_pageup(void)
 	int h, w;
 	size_t d;
 
+	(void)w;
+
 	if (cedit_state.entry_it == list_begin(&cedit_state.content)) {
 		cedit_state.content_it = list_begin(&cedit_state.content);
 
@@ -524,8 +528,9 @@ void cedit_event_pageup(void)
 void cedit_event_pagedown(void)
 {
 	int h, w;
-
 	list_node_t *it = cedit_get_page_end_it();
+
+	(void)w;
 
 	if (it == list_end(&cedit_state.content)) {
 		cedit_state.content_it = list_prev(list_end(&cedit_state.content));
