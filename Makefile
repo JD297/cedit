@@ -1,7 +1,7 @@
 .POSIX:
 
 CC            = cc
-CFLAGS        = -std=c89 -Wall -Wextra -Wpedantic -g -I src
+CFLAGS        = -std=c89 -Wall -Wextra -Wpedantic -g -I src -I .
 LDFLAGS       = -lcurses
 
 TARGET        = cedit
@@ -11,10 +11,13 @@ MANDIR        = $(PREFIX)/share/man
 SRCDIR        = src
 BUILDDIR      = build
 
+BUILDINFO     = $(BUILDDIR)/BUILDINFO.h
+
 OBJFILES      = $(BUILDDIR)/cedit.o\
                 $(BUILDDIR)/string.o $(BUILDDIR)/list_string.o
 
-HEADERS       = $(SRCDIR)/jd297/string.h $(SRCDIR)/jd297/list_string.h
+HEADERS       = $(BUILDINFO)\
+                $(SRCDIR)/jd297/string.h $(SRCDIR)/jd297/list_string.h
 
 $(BUILDDIR)/$(TARGET): $(OBJFILES)
 	$(CC) -o $@ $(OBJFILES) $(LDFLAGS)
@@ -27,6 +30,15 @@ $(BUILDDIR)/string.o: $(HEADERS)
 
 $(BUILDDIR)/list_string.o: $(HEADERS)
 	$(CC) $(CFLAGS) -c -o $@ -DJD297_LIST_IMPLEMENTATION -x c $(SRCDIR)/jd297/list_string.h
+
+$(BUILDDIR)/BUILDINFO.h: src/BUILDINFO.h.template Makefile .git/logs/HEAD
+	@cp src/BUILDINFO.h.template $(BUILDINFO)
+	@printf "#define __COMMIT__ \"%s\"\n" "$$(git rev-parse --short HEAD)" >> $(BUILDINFO)
+	@printf "#define __UNAME__ \"%s\"\n" "$$(uname -mrsv)" >> $(BUILDINFO)
+	@printf "#define __CC__ \"%s\"\n" "$(CC)" >> $(BUILDINFO)
+	@printf "#define __CC_VERSION__ \"%s\"\n" "$$($(CC) -v 2>&1 | head -n 1)" >> $(BUILDINFO)
+	@printf "#define __CFLAGS__ \"%s\"\n" "$(CFLAGS)" >> $(BUILDINFO)
+	@printf "#define __LDFLAGS__ \"%s\"\n" "$(LDFLAGS)" >> $(BUILDINFO)
 
 clean:
 	rm -f $(BUILDDIR)/*

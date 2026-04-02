@@ -1,0 +1,7 @@
+#define CEDIT_PRINT_BUILDINFO() \
+	warnx("(%s, %s, %s) on %s", __COMMIT__, __DATE__, __TIME__, __UNAME__);
+
+#define CEDIT_PRINT_CC() \
+	fprintf(stderr, "%-7s: %s (%s)\n", "CC", __CC__, __CC_VERSION__);\
+	fprintf(stderr, "%-7s: %s\n", "CFLAGS", __CFLAGS__);\
+	fprintf(stderr, "%-7s: %s\n", "LDFLAGS", __LDFLAGS__);
