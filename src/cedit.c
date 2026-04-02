@@ -17,6 +17,7 @@
 #define KEY_CTRL(x) ((x) & 0x1f)
 
 int nflag = 0;
+FILE *fnull;
 
 struct {
 	WINDOW *wcontent;
@@ -60,6 +61,11 @@ static void cedit_state_init(const char *filename)
 	cedit_state.linenumbers = nflag;
 
 	cedit_state.mstate = CEDIT_MENU_NORMAL;
+}
+
+static void cedit_exit(void)
+{
+	fclose(fnull);
 }
 
 static void cedit_curses_exit(void)
@@ -265,14 +271,11 @@ void cedit_display_content_line(str_t *s)
 
 void cedit_display_content_init_linenumbering(int *lwidth, size_t *lindex)
 {
-	extern int snprintf(char * str, size_t size, const char * format, ...);
-	char strbuf[21];
-
 	if (!cedit_state.linenumbers) {
 		return;
 	}
 
-	*lwidth = snprintf(strbuf, sizeof(strbuf), "%lu",
+	*lwidth = fprintf(fnull, "%lu",
 		list_size(&cedit_state.content) - 1);
 
 	if (2 > *lwidth) {
@@ -682,6 +685,12 @@ int main(int argc, char** argv)
 		err(EXIT_FAILURE, "unveil");
 	}
 	#endif
+
+	if ((fnull = fopen("/dev/null", "r+")) == NULL) {
+		err(EXIT_FAILURE, "%s", "/dev/null");
+	}
+
+	atexit(cedit_exit);
 
 	while ((ch = getopt(argc, argv, "vcnrw")) != -1) {
 		switch (ch) {
