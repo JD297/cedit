@@ -12,6 +12,8 @@
 #include <jd297/string.h>
 #include <jd297/list_string.h>
 
+#include <build/BUILDINFO.h>
+
 #define KEY_CTRL(x) ((x) & 0x1f)
 
 int nflag = 0;
@@ -48,7 +50,7 @@ struct {
 static void cedit_state_init(const char *filename)
 {
 	if (list_create(&cedit_state.content) == -1) {
-		err(EXIT_FAILURE, "");
+		err(EXIT_FAILURE, "list_create");
 	}
 	
 	cedit_state.filename = filename;
@@ -175,7 +177,7 @@ void cedit_event_load(void)
 	buffer = (char *)malloc(sb.st_size + 1);
 
 	if (buffer == NULL) {
-		err(EXIT_FAILURE, "");
+		err(EXIT_FAILURE, "malloc");
 	}
 
 	(void)fread(buffer, sizeof(char), sb.st_size, f);
@@ -202,7 +204,7 @@ void cedit_event_load(void)
 
 	cedit_state.entry_it = cedit_state.content_it = list_begin(&cedit_state.content);
 }
-#include <errno.h>
+
 void cedit_event_save(void)
 {
 	const char *fmode;
@@ -655,7 +657,7 @@ void cedit_event_delete(void)
 
 void usage(void)
 {
-	fprintf(stderr, "usage: cedit [-cnrw] file\n");
+	fprintf(stderr, "usage: cedit [-cnrvw] file\n");
 }
 
 int main(int argc, char** argv)
@@ -676,8 +678,14 @@ int main(int argc, char** argv)
 	}
 	#endif
 
-	while ((ch = getopt(argc, argv, "cnrw")) != -1) {
+	while ((ch = getopt(argc, argv, "vcnrw")) != -1) {
 		switch (ch) {
+			case 'v':
+				CEDIT_PRINT_BUILDINFO();
+
+				CEDIT_PRINT_CC();
+
+				exit(EXIT_SUCCESS);
 			case 'c':
 				cedit_state.mode = CEDIT_CREATE_RDWR;
 				break;
