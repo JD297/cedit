@@ -265,15 +265,15 @@ void cedit_display_content_line(str_t *s)
 
 void cedit_display_content_init_linenumbering(int *lwidth, size_t *lindex)
 {
+	extern int snprintf(char * str, size_t size, const char * format, ...);
 	char strbuf[21];
 
 	if (!cedit_state.linenumbers) {
 		return;
 	}
 
-	snprintf(strbuf, 21, "%zu", list_size(&cedit_state.content) - 1);
-
-	*lwidth = strlen(strbuf);
+	*lwidth = snprintf(strbuf, sizeof(strbuf), "%lu",
+		list_size(&cedit_state.content) - 1);
 
 	if (2 > *lwidth) {
 		*lwidth = 2;
