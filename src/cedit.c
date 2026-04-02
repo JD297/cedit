@@ -100,10 +100,8 @@ static void cedit_curses_init(void)
 	#if defined(__OpenBSD__)
 	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
-			promises = "stdio tty rpath wpath cpath";
-			break;
 		case CEDIT_RDWR:
-			promises = "stdio tty rpath  wpath";
+			promises = "stdio tty rpath wpath cpath";
 			break;
 		case CEDIT_RDONLY:
 		default:
@@ -133,12 +131,9 @@ void cedit_event_load(void)
 	#if defined(__OpenBSD__)
 	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
+		case CEDIT_RDWR:
 			promises = "stdio tty rpath wpath cpath";
 			permissions = "rwc";
-			break;
-		case CEDIT_RDWR:
-			promises = "stdio tty rpath wpath";
-			permissions = "rw";
 			break;
 		case CEDIT_RDONLY:
 		default:
@@ -219,13 +214,12 @@ void cedit_event_save(void)
 
 	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
-			fmode = "w+";
-			break;
 		case CEDIT_RDWR:
-			fmode = "r+";
+			fmode = "w+";
 			break;
 		case CEDIT_RDONLY:
 		default:
+			fmode = "r";
 			cedit_state.mstate = CEDIT_MENU_WRITE_DISABLED;
 			return;
 	}
@@ -681,7 +675,11 @@ int main(int argc, char** argv)
 		err(EXIT_FAILURE, "pledge");
 	}
 
-	if (unveil("/usr/share/terminfo", "r")) {
+	if (unveil("/usr/share/terminfo", "r") == -1) {
+		err(EXIT_FAILURE, "unveil");
+	}
+
+	if (unveil("/dev/null", "w") == -1) {
 		err(EXIT_FAILURE, "unveil");
 	}
 	#endif
@@ -725,10 +723,8 @@ int main(int argc, char** argv)
 	#if defined(__OpenBSD__)
 	switch (cedit_state.mode) {
 		case CEDIT_CREATE_RDWR:
-			promises = "stdio tty unveil rpath wpath cpath";
-			break;
 		case CEDIT_RDWR:
-			promises = "stdio tty unveil rpath wpath ";
+			promises = "stdio tty unveil rpath wpath cpath";
 			break;
 		case CEDIT_RDONLY:
 		default:
