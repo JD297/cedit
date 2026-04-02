@@ -118,8 +118,6 @@ extern str_t *str_from_cstr(const char *cstr)
 	if (str_val(str) == NULL) {
 		return NULL;
 	}
-
-	snprintf(str_val(str), str_capacity(str), "%s", cstr);
 	
 	(void)memcpy(str_val(str), cstr, str_capacity(str));
 
