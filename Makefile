@@ -26,6 +26,7 @@ $(BUILDDIR)/cedit.o: $(HEADERS) $(SRCDIR)/cedit.c
 	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/cedit.c
 
 $(BUILDDIR)/string.o: $(HEADERS)
+	$(CC) $(CFLAGS) -o $@.testsuite -DJD297_STRING_TESTSUITE -x c $(SRCDIR)/jd297/string.h && $@.testsuite
 	$(CC) $(CFLAGS) -c -o $@ -DJD297_STRING_IMPLEMENTATION -x c $(SRCDIR)/jd297/string.h
 
 $(BUILDDIR)/list_string.o: $(HEADERS)
