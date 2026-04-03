@@ -85,6 +85,7 @@ extern str_t *str_erase(str_t *str, size_t index, size_t count);
 
 #ifdef JD297_STRING_IMPLEMENTATION
 
+#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -221,7 +222,7 @@ extern str_t *str_insert_char(str_t *str, size_t index, char c)
 
 	return str;
 }
-#include <assert.h>
+
 extern str_t *str_insert_cstr(str_t *str, size_t index, const char *cstr)
 {
 	size_t len_cstr = strlen(cstr);
