@@ -273,53 +273,19 @@ extern str_t *str_assign_cstr(str_t *str, const char *cstr)
 
 extern str_t *str_insert_char(str_t *str, size_t index, char c)
 {
-	if (index > str_length(str)) {
-		return NULL;
-	}
-
-	str_length(str) += 1;
-
-	if (str_length(str) >= str_capacity(str)) {
-		char *old_val = str_val(str);
-
-		str_capacity(str) = str_length(str) + 1;
-		
-		str_val(str) = (char *)realloc(str_val(str), str_capacity(str) * sizeof(char));
-
-		if (str_val(str) == NULL) {
-			free(old_val);
-
-			return NULL;
-		}
-	}
-
-	(void)memmove(str_val(str) + index + 1, str_val(str) + index, str_length(str) + 1 - index);
-
-	str_at(str, index) = c;
-
-	return str;
-}
-
-extern str_t *str_insert_cstr(str_t *str, size_t index, const char *cstr)
-{
-	size_t len_cstr = strlen(cstr);
-
-	assert(cstr != NULL);
+	const size_t len_c = sizeof(c);
+	size_t new_len;
 
 	if (index > str_length(str)) {
 		return NULL;
 	}
 
-	if (len_cstr == 0) {
-		return str;
-	}
+	new_len = str_length(str) + len_c;
 
-	str_length(str) += len_cstr;
-
-	if (str_length(str) >= str_capacity(str)) {
+	if (new_len >= str_capacity(str)) {
 		char *old_val = str_val(str);
 
-		str_capacity(str) = str_length(str) + 1;
+		str_capacity(str) = new_len + 1;
 		
 		str_val(str) = (char *)JD297_REALLOC(str_val(str), str_capacity(str) * sizeof(char));
 
@@ -330,9 +296,53 @@ extern str_t *str_insert_cstr(str_t *str, size_t index, const char *cstr)
 		}
 	}
 
-	(void)memmove(str_val(str) + index + len_cstr, str_val(str) + index, len_cstr);
+	(void)memmove(str_val(str) + index + len_c, str_val(str) + index, (str_length(str) + 1) - index);
+
+	str_at(str, index) = c;
+
+	str_length(str) = new_len;
+
+	return str;
+}
+
+extern str_t *str_insert_cstr(str_t *str, size_t index, const char *cstr)
+{
+	size_t len_cstr;
+	size_t new_len;
+
+	assert(cstr != NULL);
+
+	 len_cstr = strlen(cstr);
+
+	if (index > str_length(str)) {
+		return NULL;
+	}
+
+	if (len_cstr == 0) {
+		return str;
+	}
+
+	new_len = str_length(str) + len_cstr;
+
+	if (new_len >= str_capacity(str)) {
+		char *old_val = str_val(str);
+
+		str_capacity(str) = new_len + 1;
+		
+		str_val(str) = (char *)JD297_REALLOC(str_val(str), str_capacity(str) * sizeof(char));
+
+		if (str_val(str) == NULL) {
+			JD297_FREE(old_val);
+
+			return NULL;
+		}
+	}
+
+	(void)memmove(str_val(str) + index + len_cstr, str_val(str) + index, (str_length(str) + 1) - index);
 
 	(void)memcpy(str_val(str) + index, cstr, len_cstr);
+
+	str_length(str) = new_len;
 
 	return str;
 }
@@ -358,10 +368,12 @@ extern str_t *str_erase(str_t *str, size_t index, size_t count)
 		
 		return str;
 	}
-	
-	str_length(str) -= count;
 
-	(void)memmove(str_val(str) + index, str_val(str) + index + count, max_len);
+	(void)memmove(str_val(str) + index, str_val(str) + index + count, str_length(str) - index - count);
+
+	str_length(str) -= count;
+	
+	str_at(str, str_length(str)) = '\0';
 
 	return str;
 }
