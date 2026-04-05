@@ -81,6 +81,83 @@ extern str_t *str_erase(str_t *str, size_t index, size_t count);
 
 #ifdef JD297_STRING_TESTSUITE
 #define JD297_STRING_IMPLEMENTATION
+
+#include <unistd.h>
+#include <assert.h>
+#include <string.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+
+extern void *jd297_guarded_malloc(size_t size)
+{
+	size_t pz;
+	unsigned char *mem;
+
+	assert((pz = sysconf(_SC_PAGESIZE)) != (size_t)-1);
+	assert(pz >= (size + sizeof(size_t)));
+
+	mem = mmap(NULL, pz * 2, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+	assert(mem != NULL);
+
+	assert(mprotect(mem + pz, pz, PROT_NONE) != -1);
+
+	(*(size_t *)mem) = size;
+
+	return (unsigned char *)mem + pz - size;
+}
+
+extern void *jd297_guarded_realloc(void *ptr, size_t new_size)
+{
+	size_t pz;
+	size_t old_size;
+	size_t *current_size;
+	unsigned char *data_src = ptr, *data_dst;
+
+	if (ptr == NULL) {
+		return jd297_guarded_malloc(new_size);
+	}
+
+	assert((pz = sysconf(_SC_PAGESIZE)) != (size_t)-1);
+	assert(pz >= (new_size + sizeof(size_t)));
+
+	current_size = (size_t *)( (size_t)data_src - ((size_t)data_src % pz) );
+
+	old_size = *current_size;
+
+	if (new_size >= old_size) {
+		data_dst = (unsigned char *)( (size_t)data_src - (new_size - old_size) );
+
+		memmove(data_dst, data_src, old_size);
+	} else {
+		data_dst = (unsigned char *)( (size_t)data_src + (old_size - new_size) );
+
+		memmove(data_dst, data_src, new_size);
+	}
+
+	*current_size = new_size;
+
+	return data_dst;
+}
+
+extern void jd297_guarded_free(void *ptr)
+{
+	assert(ptr != NULL);
+}
+
+#define JD297_MALLOC(size) jd297_guarded_malloc((size))
+#define JD297_REALLOC(ptr, size) jd297_guarded_realloc((ptr), (size))
+#define JD297_FREE(ptr) jd297_guarded_free((ptr))
+
+#endif
+
+#ifndef JD297_MALLOC
+#define JD297_MALLOC(size) malloc((size))
+#endif
+
+#ifndef JD297_REALLOC
+#define JD297_REALLOC(ptr, size) realloc((ptr), (size))
+#define JD297_FREE(ptr) free((ptr))
 #endif
 
 #ifdef JD297_STRING_IMPLEMENTATION
@@ -97,7 +174,7 @@ extern "C" {
 
 void str_free(str_t *str)
 {
-    free(str->elements);
+    JD297_FREE(str->elements);
 
     str->elements = NULL;
     str->len = 0;
@@ -106,7 +183,7 @@ void str_free(str_t *str)
 
 extern str_t *str_from_cstr(const char *cstr)
 {
-	str_t *str = (str_t *)malloc(sizeof(str_t));
+	str_t *str = (str_t *)JD297_MALLOC(sizeof(str_t));
 	
 	if (str == NULL || cstr == NULL) {
 		return NULL;
@@ -114,7 +191,7 @@ extern str_t *str_from_cstr(const char *cstr)
 
 	str_length(str) = strlen(cstr);
 	str_capacity(str) = str->num + 1;
-	str_val(str) = (char *)malloc(str_capacity(str) * sizeof(char));
+	str_val(str) = (char *)JD297_MALLOC(str_capacity(str) * sizeof(char));
 
 	if (str_val(str) == NULL) {
 		return NULL;
@@ -146,7 +223,7 @@ extern str_t *str_substr(const str_t *str, size_t pos, size_t count)
 		return NULL;
 	}
 
-	substr = (str_t *)malloc(sizeof(str_t));
+	substr = (str_t *)JD297_MALLOC(sizeof(str_t));
 	
 	if (substr == NULL) {
 		return NULL;
@@ -162,7 +239,7 @@ extern str_t *str_substr(const str_t *str, size_t pos, size_t count)
 
 	str_capacity(substr) = str_length(substr) + 1;
 	
-	str_val(substr) = (char *)malloc(str_capacity(substr) * sizeof(char));
+	str_val(substr) = (char *)JD297_MALLOC(str_capacity(substr) * sizeof(char));
 
 	if (str_val(str) == NULL) {
 		return NULL;
@@ -181,10 +258,10 @@ extern str_t *str_assign_cstr(str_t *str, const char *cstr)
 	str_length(str) = strlen(cstr);
 	str_capacity(str) = str_length(str) + 1;
 
-	str_val(str) = (char *)realloc(str_val(str), str_capacity(str) * sizeof(char));
+	str_val(str) = (char *)JD297_REALLOC(str_val(str), str_capacity(str) * sizeof(char));
 
 	if (str_val(str) == NULL) {
-		free(old_val);
+		JD297_FREE(old_val);
 
 		return NULL;
 	}
@@ -244,10 +321,10 @@ extern str_t *str_insert_cstr(str_t *str, size_t index, const char *cstr)
 
 		str_capacity(str) = str_length(str) + 1;
 		
-		str_val(str) = (char *)realloc(str_val(str), str_capacity(str) * sizeof(char));
+		str_val(str) = (char *)JD297_REALLOC(str_val(str), str_capacity(str) * sizeof(char));
 
 		if (str_val(str) == NULL) {
-			free(old_val);
+			JD297_FREE(old_val);
 
 			return NULL;
 		}
