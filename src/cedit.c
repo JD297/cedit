@@ -390,7 +390,21 @@ void cedit_event_toggle_linenumbers(void)
 
 void cedit_event_home(void)
 {
-	/* TODO if cindex == 0 forwards to next char that is a non-whitespace */
+	if (cedit_state.cindex == 0) {
+		char *c;
+		char *base = str_val(cedit_state.content_it->value);
+
+		for (c = base; *c != '\0'; ++c) {
+			if (isprint(*c) != 0) {
+				cedit_state.cindex = cedit_state.sindex = c - base;
+
+				break;
+			}
+		}
+
+		return;
+	}
+
 	cedit_state.cindex = cedit_state.sindex = 0;
 }
 
