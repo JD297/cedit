@@ -344,7 +344,8 @@ void cedit_display_menu(void)
 	wprintw(cedit_state.wmenu, " ");
 	
 	wprintw(cedit_state.wmenu, "Ln %lu, Col %lu",
-		list_distance(list_begin(&cedit_state.content), cedit_state.content_it) + 1, cedit_state.cindex + 1);
+		list_distance(list_begin(&cedit_state.content), 
+			cedit_state.content_it) + 1, cedit_state.cindex + 1);
 
 	if (cedit_state.mode == CEDIT_RDONLY) {
 		wprintw(cedit_state.wmenu, " ");
