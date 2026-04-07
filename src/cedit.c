@@ -672,6 +672,25 @@ void cedit_event_dc(void)
 	(void)list_erase(&cedit_state.content, list_next(cedit_state.content_it));
 }
 
+void cedit_event_delete(void)
+{
+	/* DUP 3 { */
+	if (list_next(cedit_state.content_it) == list_end(&cedit_state.content)) {
+		return;
+	}
+	/* DUP 3 */
+
+	str_free(cedit_state.content_it->value);
+
+	if (cedit_state.entry_it == cedit_state.content_it) {
+		cedit_state.entry_it = list_next(cedit_state.entry_it);
+	}
+
+	cedit_state.content_it = list_erase(&cedit_state.content, cedit_state.content_it);
+
+	cedit_state.sindex = cedit_state.cindex = 0;
+}
+
 void usage(void)
 {
 	fprintf(stderr, "usage: cedit [-cnrvw] file\n");
@@ -784,6 +803,9 @@ int main(int argc, char** argv)
 			break;
 			case KEY_CTRL('l'):
 				cedit_event_toggle_linenumbers();
+			break;
+			case KEY_CTRL('d'):
+				cedit_event_delete();
 			break;
 			case KEY_HOME:
 				cedit_event_home();
