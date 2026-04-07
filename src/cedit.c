@@ -644,7 +644,7 @@ void cedit_event_backspace(void)
 	cedit_state.sindex = cedit_state.cindex = nindex;
 }
 
-void cedit_event_delete(void)
+void cedit_event_dc(void)
 {
 	if (cedit_state.cindex < str_length(cedit_state.content_it->value)) {
 		(void)str_erase(cedit_state.content_it->value, 
@@ -813,7 +813,7 @@ int main(int argc, char** argv)
 				cedit_event_backspace();
 			break;
 			case KEY_DC:
-				cedit_event_delete();
+				cedit_event_dc();
 			break;
 			default: {
 				cedit_event_insert();
