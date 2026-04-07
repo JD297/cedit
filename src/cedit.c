@@ -15,6 +15,7 @@
 #include <build/BUILDINFO.h>
 
 #define KEY_CTRL(x) ((x) & 0x1f)
+#define CEDIT_KEY_ESC	27
 
 int nflag = 0;
 FILE *fnull;
@@ -837,6 +838,14 @@ int main(int argc, char** argv)
 			case KEY_DC:
 				cedit_event_dc();
 			break;
+			case CEDIT_KEY_ESC: {
+				/* catch-all to avoid terminal snow flakes */
+				nodelay(cedit_state.wcontent, TRUE);
+
+				while ((ch = wgetch(cedit_state.wcontent)) != ERR);
+
+				nodelay(cedit_state.wcontent, FALSE);
+			} break;
 			default: {
 				cedit_event_insert();
 			} break;
