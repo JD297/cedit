@@ -15,7 +15,10 @@
 #include <build/BUILDINFO.h>
 
 #define KEY_CTRL(x) ((x) & 0x1f)
-#define CEDIT_KEY_ESC	27
+
+#define CEDIT_KEY_ESC		  27
+#define CEDIT_KEY_SUP		0700
+#define CEDIT_KEY_SDOWN		0701
 
 int nflag = 0;
 FILE *fnull;
@@ -113,6 +116,9 @@ static void cedit_curses_init(void)
 		err(EXIT_FAILURE, "pledge");
 	}
 	#endif
+
+	define_key("\x1B[1;2A", CEDIT_KEY_SUP);
+	define_key("\x1B[1;2B", CEDIT_KEY_SDOWN);
 }
 
 void cedit_event_load(void)
@@ -673,6 +679,48 @@ void cedit_event_dc(void)
 	(void)list_erase(&cedit_state.content, list_next(cedit_state.content_it));
 }
 
+void cedit_event_moveup(void)
+{
+	str_t *tmp;
+
+	if (cedit_state.content_it == list_begin(&cedit_state.content)) {
+		return;
+	}
+
+	if (list_next(cedit_state.content_it) == list_end(&cedit_state.content)) {
+		return;
+	}
+
+	tmp = cedit_state.content_it->value;
+
+	cedit_state.content_it->value = list_prev(cedit_state.content_it)->value;
+
+	list_prev(cedit_state.content_it)->value = tmp;
+
+	cedit_event_up();
+}
+
+void cedit_event_movedown(void)
+{
+	str_t *tmp;
+
+	if (list_next(cedit_state.content_it) == list_end(&cedit_state.content)) {
+		return;
+	}
+
+	if (list_next(cedit_state.content_it) == list_prev(list_end(&cedit_state.content))) {
+		return;
+	}
+
+	tmp = cedit_state.content_it->value;
+
+	cedit_state.content_it->value = list_next(cedit_state.content_it)->value;
+
+	list_next(cedit_state.content_it)->value = tmp;
+
+	cedit_event_down();
+}
+
 void cedit_event_delete(void)
 {
 	/* DUP 3 { */
@@ -837,6 +885,12 @@ int main(int argc, char** argv)
 			break;
 			case KEY_DC:
 				cedit_event_dc();
+			break;
+			case CEDIT_KEY_SUP:
+				cedit_event_moveup();
+			break;
+			case CEDIT_KEY_SDOWN:
+				cedit_event_movedown();
 			break;
 			case CEDIT_KEY_ESC: {
 				/* catch-all to avoid terminal snow flakes */
