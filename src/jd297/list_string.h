@@ -125,18 +125,19 @@ extern list_node_t *list_insert(list_t *list, list_node_t *pos, str_t *value)
 extern list_node_t *list_erase(list_t *list, list_node_t *pos)
 {
 	list_node_t *next;
-	
+
 	if (list->end == pos->next) {
-			next = list->end;
+		next = list->end;
+	} else if (list->begin == pos) {
+		next = pos->next;
+		next->prev = NULL;
+		next->next->prev = next;
+		list->begin = next;
 	} else {
 		pos->next->prev = pos->prev;
 		next = pos->prev->next = pos->next;
 	}
-	
-	if (list->begin == pos) {
-		list->begin = next;
-	}
-	
+
 	free(pos);
 
 	--list_size(list);
