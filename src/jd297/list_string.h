@@ -178,13 +178,19 @@ extern size_t list_distance(list_node_t *first, list_node_t *last)
 extern void list_advance(list_node_t **it, long n)
 {
 	while (n != 0) {
+		assert(*it != NULL);
+
 		if (n > 0) { /* positive */
-			assert(list_next(*it) != NULL);
+			if (list_next(*it)->next == NULL) {
+				return;
+			}
 
 			*it = list_next(*it);
 			--n;
 		} else { /* negative */
-			assert(list_prev(*it) != NULL);
+			if (list_prev(*it) == NULL) {
+				return;
+			}
 
 			*it = list_prev(*it);
 			++n;
